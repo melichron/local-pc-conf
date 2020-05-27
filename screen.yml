@@ -1,0 +1,27 @@
+- block:
+  - name: install screen
+    package:
+      name: "{{ item }}"
+      state: latest
+    loop:
+    - "screen"
+    - "curl"
+    - "git"
+
+  - name: define .screenrc
+    copy:
+      dest: "/home/{{ USER }}/.screenrc"
+      content: |
+        {% raw -%}
+        caption always "%{= 45}%{+b w}Screen: %n | %h %=%t %c"
+        hardstatus alwayslastline "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
+        termcapinfo xterm* ti@:te@
+        escape ^Aa
+        bind c screen 1
+        bind ^c screen 1
+        bind 0 select 10
+        screen 1
+        {% endraw -%}
+      owner: '{{ USER }}'
+      group: '{{ USER }}'
+      mode: '0644'
