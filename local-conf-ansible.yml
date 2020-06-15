@@ -1,7 +1,7 @@
 ---
-- hosts: selftest
+- hosts: localhost
   vars:
-    USER: 'vyktor.sokurenko'
+    USER: 'melichron'
 
   pre_tasks:
     - name: install python for Ansible
@@ -36,5 +36,8 @@
 
   - name: include bash_it tasks
     include_tasks: bash_it.yml
+
+  - name: include sublime_text tasks
+    include_tasks: sublime.yml
 
   become: yes
