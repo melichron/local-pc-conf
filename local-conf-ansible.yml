@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
   vars:
-    USER: 'melichron'
+    USER: 'vyktor.sokurenko'
 
   pre_tasks:
     - name: install python for Ansible
