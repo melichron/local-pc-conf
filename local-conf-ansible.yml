@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
   vars:
-    USER: 'vyktor.sokurenko'
+    USER: 'melichron'
 
   pre_tasks:
     - name: install python for Ansible
@@ -39,5 +39,11 @@
 
   - name: include sublime_text tasks
     include_tasks: sublime.yml
+
+  - name: include win10theme tasks
+    include_tasks: win10theme.yml
+
+  - name: include bash tasks
+    include_tasks: bash.yml
 
   become: yes

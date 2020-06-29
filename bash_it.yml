@@ -6,11 +6,9 @@
   blockinfile:
     path: "/home/{{ USER }}/.bashrc"
     backup: no
+    marker: "# {mark} Bash-IT Block"
     state: present
     block: |
-      alias sn='sudo nano '
-      alias n='nano '
-      alias xx='sudo su'
 
       # Path to the bash it configuration
       export BASH_IT="/home/{{ USER }}/.bash_it"
