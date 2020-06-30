@@ -164,6 +164,8 @@
         Plug 'itchyny/lightline.vim'
         Plug 'Yggdroot/indentLine'
         Plug 'tpope/vim-fugitive'
+        Plug 'ekalinin/Dockerfile.vim'
+        Plug 'chr4/nginx.vim'
         call plug#end()
         colorscheme ron
         map <C-n> :NERDTreeToggle<CR>
