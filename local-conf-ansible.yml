@@ -1,19 +1,9 @@
 ---
 - hosts: localhost
   vars:
-    USER: 'vyktor.sokurenko'
-
-  pre_tasks:
-    - name: install python for Ansible
-      become: yes
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python3-minimal)
-      changed_when: False
-      tags: python
+    USER: '{{ USER }}'
 
   tasks:
-  - name: populate service facts
-    no_log: true
-    service_facts:
 
   - name: show user and hostname
     debug:
@@ -25,30 +15,36 @@
   #     path: /usr/sbin/lightdm
   #   register: lightdm_installed
 
-  # - name: include screen tasks
-  #   include_tasks: screen.yml
+  - name: include screen tasks
+    include_tasks: tasks/screen.yml
+    tags: ['never','screen']
 
   - name: include tmux tasks
-    include_tasks: tmux.yml
-    tags: tmux
+    include_tasks: tasks/tmux.yml
+    tags: ['tmux','never']
 
-  # - name: include tilda tasks
-  #   include_tasks: tilda.yml
+  - name: include tilda tasks
+    include_tasks: tasks/tilda.yml
+    tags: ['never','tilda']
 
-  # - name: include vim tasks
-  #   include_tasks: vim.yml
+  - name: include vim tasks
+    include_tasks: tasks/vim.yml
+    tags: ['never','vim']
 
-  # - name: include bash_it tasks
-  #   include_tasks: bash_it.yml
+  - name: include bash_it tasks
+    include_tasks: tasks/bash_it.yml
+    tags: ['never','bash_it']
 
-  # - name: include sublime_text tasks
-  #   include_tasks: sublime.yml
+  - name: include sublime_text tasks
+    include_tasks: tasks/sublime.yml
+    tags: ['never','sublime']
 
   - name: include win10theme tasks
-    include_tasks: win10theme.yml
-    tags: win10theme
+    include_tasks: tasks/win10theme.yml
+    tags: ['never','win10theme']
 
-  # - name: include bash tasks
-  #   include_tasks: bash.yml
+  - name: include bash tasks
+    include_tasks: tasks/bash.yml
+    tags: ['never','bash']
 
   become: yes

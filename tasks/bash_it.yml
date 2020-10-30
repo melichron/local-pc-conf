@@ -1,4 +1,5 @@
-- git:
+- name: clone bash_it repo
+  git:
     repo: 'https://github.com/Bash-it/bash-it.git'
     dest: "/home/{{ USER }}/.bash_it"
 

@@ -3,6 +3,7 @@
     package:
       name: vim
       state: latest
+    become: yes
 
   - name: define .vimrc
     copy:
@@ -176,11 +177,11 @@
 
         let g:indentLine_color_term = 98
 
-        let g:indentLine_leadingSpaceEnabled = 1 
+        let g:indentLine_leadingSpaceEnabled = 1
         let g:indentLine_leadingSpaceChar = '🞄'
         map  <C-l> :tabn<CR>
         map  <C-h> :tabp<CR>
         {% endraw -%}
-      owner: 'root'
-      group: 'root'
+      owner: '{{ USER }}'
+      group: '{{ USER }}'
       mode: '0664'

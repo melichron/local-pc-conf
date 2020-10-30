@@ -1,0 +1,67 @@
+- name: install tmux
+  package:
+    name: "{{ item }}"
+    state: latest
+  loop:
+  - "tmux"
+  - "curl"
+  - "git"
+  become: yes
+
+- name: download tpm
+  git:
+    repo: 'https://github.com/tmux-plugins/tpm.git'
+    dest: "/home/{{ USER }}/.tmux/plugins/tpm"
+  register: tmp_install
+
+- name: define .tmux.conf
+  copy:
+    dest: "/home/{{ USER }}/.tmux.conf"
+    content: |
+      {% raw -%}
+      # https://rtfm.co.ua/linux-menedzher-terminalov-tmux-ustanovka-nastrojka-komandy/#%D0%9D%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B9%D0%BA%D0%B8
+
+      unbind C-b
+      set -g prefix C-a
+      bind -n M-Left select-pane -L
+      bind -n M-Right select-pane -U
+      bind -n M-Up select-pane -U
+      bind -n M-Down select-pane -D
+
+      setw -g monitor-activity on
+      set -g visual-activity on
+
+      set-window-option -g window-status-current-bg cyan
+      # set-option -g mouse-select-pane on
+      set -g mouse on
+
+      bind -n WheelUpPane if-shell -F -t = "#{mouse_any_flag}" "send-keys -M" "if -Ft= '#{pane_in_mode}' 'send-keys -M' 'select-pane -t=; copy-mode -e; send-keys -M'"
+      bind -n WheelDownPane select-pane -t= \; send-keys -M
+      bind -n C-WheelUpPane select-pane -t= \; copy-mode -e \; send-keys -M
+
+      # To copy, drag to highlight text in yellow, press Enter and then release mouse
+      # Use vim keybindings in copy mode
+      setw -g mode-keys vi
+      # Update default binding of `Enter` to also use copy-pipe
+
+      # Start windows and panes at 1, not 0
+      set -g base-index 1
+      setw -g pane-base-index 1
+      set -g @cpu_bg-color "#[fg=#fa8072]"
+      set -g status-right ' %d-%m-%Y %H:%M | #{ram_bg_color} #{ram_percentage} | #{cpu_bg_color} #{cpu_percentage} '
+      # List of plugins
+      set -g @plugin 'tmux-plugins/tpm'
+      set -g @plugin 'tmux-plugins/tmux-sensible'
+      set -g @plugin 'tmux-plugins/tmux-cpu'
+      set -g @plugin 'tmux-plugins/tmux-resurrect'
+      set -g @plugin 'tmux-plugins/tmux-yank'
+      set -g @plugin 'tmux-plugins/tmux-continuum'
+
+      set -g @continuum-restore 'on'
+
+      run -b '~/.tmux/plugins/tpm/tpm'
+      {% endraw -%}
+    owner: '{{ USER }}'
+    group: '{{ USER }}'
+    mode: '0644'
+  when: tmp_install is success

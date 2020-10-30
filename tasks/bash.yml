@@ -27,3 +27,4 @@
       alias sn='sudo nano '
       alias n='nano '
       alias xx='sudo su'
+      alias nullrepo='git add . && git stash && git stash drop'
