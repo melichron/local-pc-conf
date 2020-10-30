@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
   vars:
-    USER: 'melichron'
+    USER: 'vyktor.sokurenko'
 
   pre_tasks:
     - name: install python for Ansible
@@ -20,30 +20,35 @@
       msg: "Setup configuration for user {{ USER }} in {{ inventory_hostname }}"
     failed_when: USER is not defined
 
-  - name: check if any version of agent is already installed
-    stat:
-      path: /usr/sbin/lightdm
-    register: lightdm_installed
+  # - name: check if any version of agent is already installed
+  #   stat:
+  #     path: /usr/sbin/lightdm
+  #   register: lightdm_installed
 
-  - name: include screen tasks
-    include_tasks: screen.yml
+  # - name: include screen tasks
+  #   include_tasks: screen.yml
 
-  - name: include tilda tasks
-    include_tasks: tilda.yml
+  - name: include tmux tasks
+    include_tasks: tmux.yml
+    tags: tmux
 
-  - name: include vim tasks
-    include_tasks: vim.yml
+  # - name: include tilda tasks
+  #   include_tasks: tilda.yml
 
-  - name: include bash_it tasks
-    include_tasks: bash_it.yml
+  # - name: include vim tasks
+  #   include_tasks: vim.yml
 
-  - name: include sublime_text tasks
-    include_tasks: sublime.yml
+  # - name: include bash_it tasks
+  #   include_tasks: bash_it.yml
+
+  # - name: include sublime_text tasks
+  #   include_tasks: sublime.yml
 
   - name: include win10theme tasks
     include_tasks: win10theme.yml
+    tags: win10theme
 
-  - name: include bash tasks
-    include_tasks: bash.yml
+  # - name: include bash tasks
+  #   include_tasks: bash.yml
 
   become: yes
