@@ -171,7 +171,7 @@
         colorscheme ron
         map <C-n> :NERDTreeToggle<CR>
 
-        NERDTreeShowHidden=1
+        let NERDTreeShowHidden=1
         let g:indentLine_enabled = 0
         let g:indentLine_char = '.'
 
