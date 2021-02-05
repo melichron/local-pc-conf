@@ -17,34 +17,34 @@
 
   - name: include screen tasks
     include_tasks: tasks/screen.yml
-    tags: ['never','screen']
+  #  tags: ['never','screen']
 
-  - name: include tmux tasks
-    include_tasks: tasks/tmux.yml
-    tags: ['tmux','never']
+#  - name: include tmux tasks
+#    include_tasks: tasks/tmux.yml
+#    tags: ['tmux','never']
 
   - name: include tilda tasks
     include_tasks: tasks/tilda.yml
-    tags: ['never','tilda']
+  #  tags: ['never','tilda']
 
   - name: include vim tasks
     include_tasks: tasks/vim.yml
-    tags: ['never','vim']
+ #   tags: ['never','vim']
 
   - name: include bash_it tasks
     include_tasks: tasks/bash_it.yml
-    tags: ['never','bash_it']
+#    tags: ['never','bash_it']
 
-  - name: include sublime_text tasks
-    include_tasks: tasks/sublime.yml
-    tags: ['never','sublime']
+#  - name: include sublime_text tasks
+#    include_tasks: tasks/sublime.yml
+#    tags: ['never','sublime']
 
-  - name: include win10theme tasks
-    include_tasks: tasks/win10theme.yml
-    tags: ['never','win10theme']
+#  - name: include win10theme tasks
+#    include_tasks: tasks/win10theme.yml
+ #   tags: ['never','win10theme']
 
   - name: include bash tasks
     include_tasks: tasks/bash.yml
-    tags: ['never','bash']
+#    tags: ['never','bash']
 
   become: yes
