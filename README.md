@@ -7,7 +7,7 @@ Install Ansible:
 sudo apt update && sudo apt install ansible -y
 ```
 
-User have to be able execute command with sudo without password. Simply:
+User have to be able to execute command with sudo without password. Simply:
 ```
 echo "$USER		ALL = (ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USER
 ```
