@@ -1,18 +1,18 @@
 - name: clone bash_it repo
   git:
     repo: 'https://github.com/Bash-it/bash-it.git'
-    dest: "/home/{{ USER }}/.bash_it"
+    dest: "/home/{{ ansible_user }}/.bash_it"
 
 - name: ensure .basrc lines
   blockinfile:
-    path: "/home/{{ USER }}/.bashrc"
+    path: "/home/{{ ansible_user }}/.bashrc"
     backup: no
     marker: "# {mark} Bash-IT Block"
     state: present
     block: |
 
       # Path to the bash it configuration
-      export BASH_IT="/home/{{ USER }}/.bash_it"
+      export BASH_IT="/home/{{ ansible_user }}/.bash_it"
 
       # Lock and Load a custom theme file.
       # Leave empty to disable theming.

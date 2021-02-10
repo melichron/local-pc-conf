@@ -1,50 +1,48 @@
 ---
 - hosts: localhost
-  vars:
-    USER: '{{ USER }}'
-    USER_GID: '{{ USER_GID }}'
-  tasks:
-
+  connection: local
+  pre_tasks:
   - name: show user and hostname
     debug:
-      msg: "Setup configuration for user {{ USER }} in {{ inventory_hostname }}"
-    failed_when: USER is not defined
+      msg: "Setup configuration for user {{ ansible_user }} in {{ inventory_hostname }}"
 
-  # - name: check if any version of agent is already installed
-  #   stat:
-  #     path: /usr/sbin/lightdm
-  #   register: lightdm_installed
-
+  tasks:
   - name: include screen tasks
     include_tasks: tasks/screen.yml
-  #  tags: ['never','screen']
+    tags:
+      - screen
 
-#  - name: include tmux tasks
-#    include_tasks: tasks/tmux.yml
-#    tags: ['tmux','never']
+  - name: include tmux tasks
+    include_tasks: tasks/tmux.yml
+    tags:
+      - tmux
 
   - name: include tilda tasks
     include_tasks: tasks/tilda.yml
-  #  tags: ['never','tilda']
+    tags:
+      - tilda
 
   - name: include vim tasks
     include_tasks: tasks/vim.yml
- #   tags: ['never','vim']
+    tags:
+      - vim
 
   - name: include bash_it tasks
     include_tasks: tasks/bash_it.yml
-#    tags: ['never','bash_it']
+    tags:
+      - bash_it
 
-#  - name: include sublime_text tasks
-#    include_tasks: tasks/sublime.yml
-#    tags: ['never','sublime']
+  - name: include sublime_text tasks
+    include_tasks: tasks/sublime.yml
+    tags: ['never','sublime']
 
-#  - name: include win10theme tasks
-#    include_tasks: tasks/win10theme.yml
- #   tags: ['never','win10theme']
+  - name: include win10theme tasks
+    include_tasks: tasks/win10theme.yml
+    tags:
+      - win10theme
 
   - name: include bash tasks
     include_tasks: tasks/bash.yml
-#    tags: ['never','bash']
-
-  become: yes
+    tags:
+      - bash
+...

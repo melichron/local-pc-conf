@@ -11,7 +11,7 @@
 
   - name: define .screenrc
     copy:
-      dest: "/home/{{ USER }}/.screenrc"
+      dest: "/home/{{ ansible_user }}/.screenrc"
       content: |
         {% raw -%}
         caption always "%{= 45}%{+b w}Screen: %n | %h %=%t %c"
@@ -23,6 +23,4 @@
         bind 0 select 10
         screen 1
         {% endraw -%}
-      owner: '{{ USER }}'
-      group: '{{ USER }}'
       mode: '0644'

@@ -5,29 +5,23 @@
 
 - name: ensure config dir
   file:
-    path: "/home/{{ USER }}/.config"
+    path: "/home/{{ ansible_user }}/.config"
     state: directory
-    owner: '{{ USER }}'
-    group: '{{ USER }}'
     mode: '0755'
   register: config_dir
 
 - name: ensure tilda dir
   file:
-    path: "/home/{{ USER }}/.config/tilda"
+    path: "/home/{{ ansible_user }}/.config/tilda"
     state: directory
-    owner: '{{ USER }}'
-    group: '{{ USER }}'
     mode: '0700'
   register: tilda_dir
   when: config_dir is success
 
 - name: create tilda config
   copy:
-    dest: "/home/{{ USER }}/.config/tilda/config_0"
-    owner: '{{ USER }}'
-    group: '{{ USER }}'
-    mode: '0775'
+    dest: "/home/{{ ansible_user }}/.config/tilda/config_0"
+    mode: '0664'
     content: |
       tilda_config_version="1.4.1"
       command="tildascreen"
