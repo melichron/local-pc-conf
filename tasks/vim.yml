@@ -3,10 +3,11 @@
     package:
       name: vim
       state: latest
+    become: yes
 
   - name: define .vimrc
     copy:
-      dest: "/home/{{ USER }}/.vimrc"
+      dest: "/home/{{ ansible_user }}/.vimrc"
       content: |
         {% raw -%}
         " The default vimrc file.
@@ -170,17 +171,17 @@
         colorscheme ron
         map <C-n> :NERDTreeToggle<CR>
 
-        NERDTreeShowHidden=1
+        let NERDTreeShowHidden=1
         let g:indentLine_enabled = 0
         let g:indentLine_char = '.'
 
         let g:indentLine_color_term = 98
 
-        let g:indentLine_leadingSpaceEnabled = 1 
+        let g:indentLine_leadingSpaceEnabled = 1
         let g:indentLine_leadingSpaceChar = '🞄'
         map  <C-l> :tabn<CR>
         map  <C-h> :tabp<CR>
         {% endraw -%}
-      owner: 'root'
-      group: 'root'
+      owner: '{{ USER }}'
+      group: '{{ USER }}'
       mode: '0664'

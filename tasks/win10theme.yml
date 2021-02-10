@@ -2,20 +2,18 @@
   file:
     path: "{{ item }}"
     state: directory
-    owner: '{{ USER }}'
-    group: '{{ USER }}'
     mode: '0775'
   loop:
-  - '/home/{{ USER }}/.themes'
-  - '/home/{{ USER }}/.icons'
+  - '/home/{{ ansible_user }}/.themes'
+  - '/home/{{ ansible_user }}/.icons'
   register: theme_dirs
 
 - name: download win10 theme
   git:
     repo: 'https://github.com/B00merang-Project/Windows-10.git'
-    dest: "/home/{{ USER }}/.themes/Windows-10"
+    dest: "/home/{{ ansible_user }}/.themes/Windows-10"
 
 - name: download win10 icons
   git:
     repo: 'https://github.com/B00merang-Artwork/Windows-10.git'
-    dest: "/home/{{ USER }}/.icons/Windows-10"
+    dest: "/home/{{ ansible_user }}/.icons/Windows-10"

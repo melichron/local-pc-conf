@@ -1,54 +1,48 @@
 ---
 - hosts: localhost
-  vars:
-    USER: 'vyktor.sokurenko'
-
+  connection: local
   pre_tasks:
-    - name: install python for Ansible
-      become: yes
-      raw: test -e /usr/bin/python || (apt -y update && apt install -y python3-minimal)
-      changed_when: False
-      tags: python
-
-  tasks:
-  - name: populate service facts
-    no_log: true
-    service_facts:
-
   - name: show user and hostname
     debug:
-      msg: "Setup configuration for user {{ USER }} in {{ inventory_hostname }}"
-    failed_when: USER is not defined
+      msg: "Setup configuration for user {{ ansible_user }} in {{ inventory_hostname }}"
 
-  # - name: check if any version of agent is already installed
-  #   stat:
-  #     path: /usr/sbin/lightdm
-  #   register: lightdm_installed
-
-  # - name: include screen tasks
-  #   include_tasks: screen.yml
+  tasks:
+  - name: include screen tasks
+    include_tasks: tasks/screen.yml
+    tags:
+      - screen
 
   - name: include tmux tasks
-    include_tasks: tmux.yml
-    tags: tmux
+    include_tasks: tasks/tmux.yml
+    tags:
+      - tmux
 
-  # - name: include tilda tasks
-  #   include_tasks: tilda.yml
+  - name: include tilda tasks
+    include_tasks: tasks/tilda.yml
+    tags:
+      - tilda
 
-  # - name: include vim tasks
-  #   include_tasks: vim.yml
+  - name: include vim tasks
+    include_tasks: tasks/vim.yml
+    tags:
+      - vim
 
-  # - name: include bash_it tasks
-  #   include_tasks: bash_it.yml
+  - name: include bash_it tasks
+    include_tasks: tasks/bash_it.yml
+    tags:
+      - bash_it
 
-  # - name: include sublime_text tasks
-  #   include_tasks: sublime.yml
+  - name: include sublime_text tasks
+    include_tasks: tasks/sublime.yml
+    tags: ['never','sublime']
 
   - name: include win10theme tasks
-    include_tasks: win10theme.yml
-    tags: win10theme
+    include_tasks: tasks/win10theme.yml
+    tags:
+      - win10theme
 
-  # - name: include bash tasks
-  #   include_tasks: bash.yml
-
-  become: yes
+  - name: include bash tasks
+    include_tasks: tasks/bash.yml
+    tags:
+      - bash
+...

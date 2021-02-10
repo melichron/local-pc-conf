@@ -1,6 +1,6 @@
 - name: ensure .bashrc ssh-agent settings
   blockinfile:
-    path: "/home/{{ USER }}/.bashrc"
+    path: "/home/{{ ansible_user }}/.bashrc"
     backup: no
     marker: "# {mark} SSH-Agent block"
     state: present
@@ -19,7 +19,7 @@
 
 - name: ensure .bashrc aliases
   blockinfile:
-    path: "/home/{{ USER }}/.bashrc"
+    path: "/home/{{ ansible_user }}/.bashrc"
     backup: no
     marker: "# {mark} Bash aliases block"
     state: present
@@ -27,3 +27,4 @@
       alias sn='sudo nano '
       alias n='nano '
       alias xx='sudo su'
+      alias nullrepo='git add . && git stash && git stash drop'
