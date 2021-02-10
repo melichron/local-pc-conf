@@ -1,30 +1,41 @@
-- name: ensure .bashrc ssh-agent settings
-  blockinfile:
-    path: "/home/{{ ansible_user }}/.bashrc"
-    backup: no
-    marker: "# {mark} SSH-Agent block"
-    state: present
-    block: |
-      ssh-add -l &>/dev/null
-      if [ "$?" == 2 ]; then
-        test -r ~/.ssh-agent-env && \
-          eval "$(<~/.ssh-agent-env)" >/dev/null
+- block:
+  - name: install packages for bash
+    package:
+      name: "{{ item }}"
+      state: latest
+    loop:
+      - "python3-pygments"
+    become: yes
+
+  - name: ensure .bashrc ssh-agent settings
+    blockinfile:
+      path: "/home/{{ ansible_user }}/.bashrc"
+      backup: no
+      marker: "# {mark} SSH-Agent block"
+      state: present
+      block: |
         ssh-add -l &>/dev/null
         if [ "$?" == 2 ]; then
-          (umask 066; ssh-agent > ~/.ssh-agent-env)
-          eval "$(<~/.ssh-agent-env)" >/dev/null
-          ssh-add ~/.ssh/id_rsa
+          test -r ~/.ssh-agent-env && \
+            eval "$(<~/.ssh-agent-env)" >/dev/null
+          ssh-add -l &>/dev/null
+          if [ "$?" == 2 ]; then
+            (umask 066; ssh-agent > ~/.ssh-agent-env)
+            eval "$(<~/.ssh-agent-env)" >/dev/null
+            ssh-add ~/.ssh/id_rsa
+          fi
         fi
-      fi
 
-- name: ensure .bashrc aliases
-  blockinfile:
-    path: "/home/{{ ansible_user }}/.bashrc"
-    backup: no
-    marker: "# {mark} Bash aliases block"
-    state: present
-    block: |
-      alias sn='sudo nano '
-      alias n='nano '
-      alias xx='sudo su'
-      alias nullrepo='git add . && git stash && git stash drop'
+  - name: ensure .bashrc aliases
+    blockinfile:
+      path: "/home/{{ ansible_user }}/.bashrc"
+      backup: no
+      marker: "# {mark} Bash aliases block"
+      state: present
+      block: |
+        alias sn='sudo nano '
+        alias n='nano '
+        alias xx='sudo su'
+        alias ccat='pygmentize -g'
+        alias gsv='git status -vv'
+        alias nullrepo='git add . && git stash && git stash drop'
