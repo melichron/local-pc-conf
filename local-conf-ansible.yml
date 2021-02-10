@@ -2,7 +2,7 @@
 - hosts: localhost
   vars:
     USER: '{{ USER }}'
-
+    USER_GID: '{{ USER_GID }}'
   tasks:
 
   - name: show user and hostname
