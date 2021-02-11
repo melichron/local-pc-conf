@@ -5,7 +5,7 @@
     mode: '0775'
   loop:
   - "$HOME/.themes"
-  - "$HOME/{{ ansible_user }}/.icons"
+  - "$HOME/.icons"
   register: theme_dirs
 
 - name: download win10 theme
