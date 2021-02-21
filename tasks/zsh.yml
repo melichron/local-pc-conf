@@ -19,7 +19,6 @@
   args:
     executable: /bin/sh
   ignore_errors: yes
-  warn: false
   register: ohmyzshinstall
 
 - name: copy default zshrc
