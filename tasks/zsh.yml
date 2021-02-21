@@ -80,7 +80,7 @@
     insertafter: "# Example aliases"
     marker: "# {mark} ZSH aliases Block"
     state: present
-    block:
+    block: |
       ssh-add -l &>/dev/null
       if [ "$?" = "2" ]; then
         test -r ~/.ssh-agent-env && \
