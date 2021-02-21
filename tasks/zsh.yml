@@ -31,7 +31,7 @@
 - name: clone powerlevel10k repo
   git:
     repo: 'https://github.com/romkatv/powerlevel10k.git'
-    dest: "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+    dest: "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
   when: ohmyzshinstall is success
   register: powerlevel10krepo
 
