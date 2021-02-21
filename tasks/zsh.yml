@@ -78,7 +78,7 @@
   blockinfile:
     path: "$HOME/.zshrc"
     backup: no
-    insertafter: "^#\sExample\saliases"
+    insertafter: "# Example aliases"
     marker: "# {mark} ZSH aliases Block"
     state: present
     block:
