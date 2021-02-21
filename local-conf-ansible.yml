@@ -17,6 +17,11 @@
     tags:
       - tmux
 
+  - name: include zsh tasks
+    include_tasks: tasks/zsh.yml
+    tags:
+      - zsh
+
   - name: include tilda tasks
     include_tasks: tasks/tilda.yml
     tags:
