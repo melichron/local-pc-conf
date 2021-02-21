@@ -9,17 +9,16 @@
     - "python3-pygments"
   become: yes
 
-- name: check is Oh My Zsh is present
-  stat:
-    path: "~/.oh-my-zsh"
-  register: ohmyzsh
+# - name: check is Oh My Zsh is present
+#   stat:
+#     path: "~/.oh-my-zsh"
+#   register: ohmyzsh
 
 - name: install Oh My Zsh is not present
   shell: wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
   args:
     executable: /bin/sh
   ignore_errors: yes
-  when: ohmyzsh.stat.isdir is not defined and not ohmyzsh.stat.isdir
   register: ohmyzshinstall
 
 - name: clone powerlevel10k repo
