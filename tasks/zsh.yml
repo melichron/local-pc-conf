@@ -9,11 +9,6 @@
     - "python3-pygments"
   become: yes
 
-# - name: check is Oh My Zsh is present
-#   stat:
-#     path: "~/.oh-my-zsh"
-#   register: ohmyzsh
-
 - name: install Oh My Zsh is not present
   shell: sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   args:
