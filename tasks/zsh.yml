@@ -19,7 +19,15 @@
   args:
     executable: /bin/sh
   ignore_errors: yes
+  warn: false
   register: ohmyzshinstall
+
+- name: copy default zshrc
+  copy:
+    src: zshrc
+    dest: "$HOME/.zshrc"
+  when: ohmyzshinstall is success
+  register: copyzshrc
 
 - name: clone powerlevel10k repo
   git:
@@ -33,13 +41,30 @@
     path: "$HOME/.zshrc"
     regexp: '^ZSH_THEME=.*$'
     replace: ZSH_THEME="powerlevel10k/powerlevel10k"
-  when: powerlevel10krepo is success
+  when: copyzshrc is success
 
 - name: ensure powerlevel10k theme settings file
   copy:
     src: p10k.zsh
-    dest: $HOME/.p10k.zsh
+    dest: "$HOME/.p10k.zsh"
   when: powerlevel10krepo is success
+
+- name: ensure powerlevel10k sourcing
+  blockinfile:
+    path: "$HOME/.zshrc"
+    backup: no
+    insertafter: BOF
+    marker: "# {mark} powerlevel10k sourcing Block"
+    state: present
+    block: |
+      if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+        source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+      fi
+  when: ohmyzshinstall
+
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
 
 - name: ensure powerlevel10k sourcing
   blockinfile:
@@ -57,6 +82,7 @@
   blockinfile:
     path: "$HOME/.zshrc"
     backup: no
+    insertafter: "^#\sExample\saliases"
     marker: "# {mark} ZSH aliases Block"
     state: present
     block:
@@ -71,6 +97,9 @@
           ssh-add ~/.ssh/id_rsa
         fi
       fi
+
+      alias nullrepo='git add . && git stash && git stash drop'
+      alias ap='ansible-playbook'
 
       alias logvault="vault login -method=userpass username=${USER}"
 
