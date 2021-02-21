@@ -15,7 +15,7 @@
 #   register: ohmyzsh
 
 - name: install Oh My Zsh is not present
-  shell: wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
+  shell: sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   args:
     executable: /bin/sh
   ignore_errors: yes
