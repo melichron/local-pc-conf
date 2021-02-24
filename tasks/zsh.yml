@@ -97,4 +97,4 @@
       alias logvault="vault login -method=userpass username=${USER}"
 
       alias gsv='git status -vv'
-      alias gtc="git add . && git commit -pm '`git status -s` Edit# `git log | grep commit | wc -l`'; git push"
+      # alias gtc="git add . && git commit -pm '`git status -s` Edit# `git log | grep commit | wc -l`'; git push"
