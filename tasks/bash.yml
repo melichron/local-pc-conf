@@ -14,7 +14,7 @@
       marker: "# {mark} SSH-Agent block"
       state: present
       block: |
-        if -f ~/.ssh/id_rsa
+        if test -f ~/.ssh/id_rsa
         then
           ssh-add -l &>/dev/null
           if [ "$?" = "2" ]; then
