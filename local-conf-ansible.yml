@@ -17,7 +17,7 @@
 
   - name: include tilda tasks
     import_tasks: tasks/tilda.yml
-    tags: tilda
+    tags: ['never','tilda']
 
   - name: include vim tasks
     import_tasks: tasks/vim.yml
@@ -33,7 +33,7 @@
 
   - name: include win10theme tasks
     import_tasks: tasks/win10theme.yml
-    tags: win10theme
+    tags: ['never','win10theme']
 
   - name: include bash tasks
     import_tasks: tasks/bash.yml
