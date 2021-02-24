@@ -7,6 +7,10 @@
       msg: "Setup configuration for user {{ ansible_user }} in {{ inventory_hostname }}"
 
   tasks:
+  - name: include zsh tasks
+    import_tasks: tasks/zsh.yml
+    tags: zsh
+
   - name: include screen tasks
     import_tasks: tasks/screen.yml
     tags: screen
