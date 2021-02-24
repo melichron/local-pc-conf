@@ -4,16 +4,16 @@
     state: directory
     mode: '0775'
   loop:
-  - "$HOME/.themes"
-  - "$HOME/.icons"
+  - "~/.themes"
+  - "~/.icons"
   register: theme_dirs
 
 - name: download win10 theme
   git:
     repo: 'https://github.com/B00merang-Project/Windows-10.git'
-    dest: "$HOME/.themes/Windows-10"
+    dest: "~/.themes/Windows-10"
 
 - name: download win10 icons
   git:
     repo: 'https://github.com/B00merang-Artwork/Windows-10.git'
-    dest: "$HOME/.icons/Windows-10"
+    dest: "~/.icons/Windows-10"

@@ -11,12 +11,12 @@
 - name: download tpm
   git:
     repo: 'https://github.com/tmux-plugins/tpm.git'
-    dest: "/home/{{ ansible_user }}/.tmux/plugins/tpm"
+    dest: "~/.tmux/plugins/tpm"
   register: tmp_install
 
 - name: define .tmux.conf
   copy:
-    dest: "/home/{{ ansible_user }}/.tmux.conf"
+    dest: "~/.tmux.conf"
     content: |
       {% raw -%}
       # https://rtfm.co.ua/linux-menedzher-terminalov-tmux-ustanovka-nastrojka-komandy/#%D0%9D%D0%B0%D1%81%D1%82%D1%80%D0%BE%D0%B9%D0%BA%D0%B8

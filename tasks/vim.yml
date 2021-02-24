@@ -7,7 +7,7 @@
 
   - name: define .vimrc
     copy:
-      dest: "/home/{{ ansible_user }}/.vimrc"
+      dest: "~/.vimrc"
       content: |
         {% raw -%}
         " The default vimrc file.

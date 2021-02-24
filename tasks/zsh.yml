@@ -76,15 +76,18 @@
     marker: "# {mark} ZSH aliases Block"
     state: present
     block: |
-      ssh-add -l &>/dev/null
-      if [ "$?" = "2" ]; then
-        test -r ~/.ssh-agent-env && \
-          eval "$(<~/.ssh-agent-env)" >/dev/null
+      if -f ~/.ssh/id_rsa
+      then
         ssh-add -l &>/dev/null
         if [ "$?" = "2" ]; then
-          (umask 066; ssh-agent > ~/.ssh-agent-env)
-          eval "$(<~/.ssh-agent-env)" >/dev/null
-          ssh-add ~/.ssh/id_rsa
+          test -r ~/.ssh-agent-env && \
+            eval "$(<~/.ssh-agent-env)" >/dev/null
+          ssh-add -l &>/dev/null
+          if [ "$?" = "2" ]; then
+            (umask 066; ssh-agent > ~/.ssh-agent-env)
+            eval "$(<~/.ssh-agent-env)" >/dev/null
+            ssh-add ~/.ssh/id_rsa
+          fi
         fi
       fi
 

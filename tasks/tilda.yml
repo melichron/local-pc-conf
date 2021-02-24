@@ -5,14 +5,14 @@
 
 - name: ensure config dir
   file:
-    path: "/home/{{ ansible_user }}/.config"
+    path: "~/.config"
     state: directory
     mode: '0755'
   register: config_dir
 
 - name: ensure tilda dir
   file:
-    path: "/home/{{ ansible_user }}/.config/tilda"
+    path: "~/.config/tilda"
     state: directory
     mode: '0700'
   register: tilda_dir
@@ -20,7 +20,7 @@
 
 - name: create tilda config
   copy:
-    dest: "/home/{{ ansible_user }}/.config/tilda/config_0"
+    dest: "~/.config/tilda/config_0"
     mode: '0664'
     content: |
       tilda_config_version="1.4.1"

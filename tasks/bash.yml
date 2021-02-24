@@ -9,26 +9,29 @@
 
   - name: ensure .bashrc ssh-agent settings
     blockinfile:
-      path: "/home/{{ ansible_user }}/.bashrc"
+      path: "~/.bashrc"
       backup: no
       marker: "# {mark} SSH-Agent block"
       state: present
       block: |
-        ssh-add -l &>/dev/null
-        if [ "$?" == 2 ]; then
-          test -r ~/.ssh-agent-env && \
-            eval "$(<~/.ssh-agent-env)" >/dev/null
+        if -f ~/.ssh/id_rsa
+        then
           ssh-add -l &>/dev/null
-          if [ "$?" == 2 ]; then
-            (umask 066; ssh-agent > ~/.ssh-agent-env)
-            eval "$(<~/.ssh-agent-env)" >/dev/null
-            ssh-add ~/.ssh/id_rsa
+          if [ "$?" = "2" ]; then
+            test -r ~/.ssh-agent-env && \
+              eval "$(<~/.ssh-agent-env)" >/dev/null
+            ssh-add -l &>/dev/null
+            if [ "$?" = "2" ]; then
+              (umask 066; ssh-agent > ~/.ssh-agent-env)
+              eval "$(<~/.ssh-agent-env)" >/dev/null
+              ssh-add ~/.ssh/id_rsa
+            fi
           fi
         fi
 
   - name: ensure .bashrc aliases
     blockinfile:
-      path: "/home/{{ ansible_user }}/.bashrc"
+      path: "~/.bashrc"
       backup: no
       marker: "# {mark} Bash aliases block"
       state: present
@@ -39,3 +42,4 @@
         alias ccat='pygmentize -g'
         alias gsv='git status -vv'
         alias nullrepo='git add . && git stash && git stash drop'
+        alias gtc="git add . && git commit -pm '`git status -s` Edit# `git log | grep commit | wc -l`'; git push"
