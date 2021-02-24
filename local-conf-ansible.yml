@@ -8,41 +8,34 @@
 
   tasks:
   - name: include screen tasks
-    include_tasks: tasks/screen.yml
-    tags:
-      - screen
+    import_tasks: tasks/screen.yml
+    tags: screen
 
   - name: include tmux tasks
-    include_tasks: tasks/tmux.yml
-    tags:
-      - tmux
+    import_tasks: tasks/tmux.yml
+    tags: tmux
 
   - name: include tilda tasks
-    include_tasks: tasks/tilda.yml
-    tags:
-      - tilda
+    import_tasks: tasks/tilda.yml
+    tags: tilda
 
   - name: include vim tasks
-    include_tasks: tasks/vim.yml
-    tags:
-      - vim
+    import_tasks: tasks/vim.yml
+    tags: vim
 
   - name: include bash_it tasks
-    include_tasks: tasks/bash_it.yml
-    tags:
-      - bash_it
+    import_tasks: tasks/bash_it.yml
+    tags: bash_it
 
   - name: include sublime_text tasks
-    include_tasks: tasks/sublime.yml
+    import_tasks: tasks/sublime.yml
     tags: ['never','sublime']
 
   - name: include win10theme tasks
-    include_tasks: tasks/win10theme.yml
-    tags:
-      - win10theme
+    import_tasks: tasks/win10theme.yml
+    tags: win10theme
 
   - name: include bash tasks
-    include_tasks: tasks/bash.yml
-    tags:
-      - bash
+    import_tasks: tasks/bash.yml
+    tags: bash
 ...
