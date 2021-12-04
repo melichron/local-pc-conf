@@ -16,7 +16,7 @@
   ignore_errors: yes
   register: ohmyzshinstall
 
-- name: copy default zshrc
+- name: copy default .zshrc
   copy:
     src: zshrc
     dest: "$HOME/.zshrc"
@@ -29,6 +29,13 @@
     dest: "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
   when: ohmyzshinstall is success
   register: powerlevel10krepo
+
+- name: clone zsh-autosuggestions repo
+  git:
+    repo: "https://github.com/zsh-users/zsh-autosuggestions"
+    dest: "$HOME/.oh-my-zsh/custom/themes/zsh-autosuggestions"
+  when: ohmyzshinstall is success
+  register: zsh_autosuggestions
 
 - name: set powerlevel10k zsh theme 
   replace:
