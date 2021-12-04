@@ -5,7 +5,7 @@
   loop:
     - vim
     - git
-  # become: yes
+  become: yes
 
 - name: List of Vim plugins
   set_fact:
