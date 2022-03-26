@@ -11,8 +11,8 @@
 
 - name: install Oh My Zsh is not present
   shell: test -d "$HOME/.oh-my-zsh/" || test sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-  args:
-    executable: /bin/sh
+  # args:
+  #   executable: /bin/sh
   ignore_errors: true
   register: ohmyzshinstall
 
