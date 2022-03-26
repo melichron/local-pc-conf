@@ -48,13 +48,6 @@
   when: ohmyzshinstall is success
   register: zsh_autosuggestions
 
-# - name: set powerlevel10k zsh theme 
-#   replace:
-#     path: "$HOME/.zshrc"
-#     regexp: '^ZSH_THEME=.*$'
-#     replace: ZSH_THEME="powerlevel10k/powerlevel10k"
-#   when: copyzshrc is success
-
 - name: ensure powerlevel10k theme settings file
   copy:
     src: p10k.zsh
