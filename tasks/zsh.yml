@@ -44,7 +44,7 @@
 - name: clone zsh-autosuggestions repo
   git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions"
-    dest: "$HOME/.oh-my-zsh/custom/themes/zsh-autosuggestions"
+    dest: "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
   when: ohmyzshinstall is success
   register: zsh_autosuggestions
 
