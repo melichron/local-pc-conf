@@ -7,13 +7,13 @@
     - "powerline"
     - "git"
     - "python3-pygments"
-  become: yes
+  become: true
 
 - name: install Oh My Zsh is not present
   shell: sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   args:
     executable: /bin/sh
-  ignore_errors: yes
+  ignore_errors: true
   register: ohmyzshinstall
 
 - name: copy default .zshrc
@@ -30,6 +30,17 @@
   when: ohmyzshinstall is success
   register: powerlevel10krepo
 
+- name: ensure completions and functions dir
+  file:
+    path: "$HOME/.oh-my-zsh/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "completions"
+    - "functions"
+  register: zsh_dirs
+  when: ohmyzshinstall is success
+
 - name: clone zsh-autosuggestions repo
   git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions"
@@ -37,12 +48,12 @@
   when: ohmyzshinstall is success
   register: zsh_autosuggestions
 
-- name: set powerlevel10k zsh theme 
-  replace:
-    path: "$HOME/.zshrc"
-    regexp: '^ZSH_THEME=.*$'
-    replace: ZSH_THEME="powerlevel10k/powerlevel10k"
-  when: copyzshrc is success
+# - name: set powerlevel10k zsh theme 
+#   replace:
+#     path: "$HOME/.zshrc"
+#     regexp: '^ZSH_THEME=.*$'
+#     replace: ZSH_THEME="powerlevel10k/powerlevel10k"
+#   when: copyzshrc is success
 
 - name: ensure powerlevel10k theme settings file
   copy:
@@ -102,7 +113,12 @@
       alias ap='ansible-playbook'
 
       alias logvault="vault login -method=userpass username=${USER}"
-
+      alias ccat='pygmentize -g'
+      alias showcert='openssl x509 -text -noout -in '
+      
+      alias xx='sudo -s'
+      alias ..="cd .."
+      alias ...="cd ../../"
+      alias gtc='git add . && git commit -m "`curl -s http://whatthecommit.com/index.txt`" && git push'
       alias gsv='git status -vv'
-      # alias gtc="git add . && git commit -pm '`git status -s` Edit# `git log | grep commit | wc -l`'; git push"
       alias cgd='if git rev-parse --is-inside-work-tree --quiet >/dev/null 2>/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
