@@ -73,7 +73,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 #plugins=(git)
-plugins=(git docker kubectl vscode colorize history docker-compose sudo aws helm terraform ubuntu singlechar safe-paste)
+plugins=(git docker kubectl vscode colorize history zsh-autosuggestions docker-compose sudo aws helm terraform ubuntu singlechar safe-paste)
 
 source $ZSH/oh-my-zsh.sh
 
