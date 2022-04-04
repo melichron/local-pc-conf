@@ -10,7 +10,7 @@
   become: true
 
 - name: install Oh My Zsh is not present
-  shell: test -d "/etc/skel/.oh-my-zsh/" || sh -c "$(cd /etc/skel && wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  shell: test -d "/etc/skel/.oh-my-zsh/" || sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && mv /root/.oh-my-zsh/ /etc/skel/)"
   # args:
   #   executable: /bin/sh
   ignore_errors: true
@@ -56,6 +56,7 @@
   copy:
     src: p10k.zsh
     dest: "/etc/skel/.p10k.zsh"
+  become: true
   when: powerlevel10krepo is success
 
 - name: ensure powerlevel10k sourcing
@@ -69,6 +70,7 @@
       if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
         source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
       fi
+  become: true
   when: copyzshrc is success
 
 - name: ensure powerlevel10k sourcing
@@ -81,6 +83,7 @@
     block: |
       # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
       [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+  become: true
   when: ohmyzshinstall
 
 - name: ensure aliases
@@ -101,3 +104,5 @@
       alias gtc='git add . && git commit -m "`curl -s http://whatthecommit.com/index.txt`" && git push'
       alias gsv='git status -vv'
       alias cgd='if git rev-parse --is-inside-work-tree --quiet >/dev/null 2>/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
+  become: true
+  when: copyzshrc is success
