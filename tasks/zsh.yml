@@ -15,7 +15,15 @@
   #   executable: /bin/sh
   ignore_errors: true
   become: true
+  register: ohmyzshinstall_root
+
+- name: Synchronization
+  synchronize:
+    src: /root/.oh-my-zsh
+    dest: /etc/skel/.oh-my-zsh
+  become: true
   register: ohmyzshinstall
+  when: ohmyzshinstall_root is success
 
 - name: copy default .zshrc
   copy:
