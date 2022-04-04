@@ -10,7 +10,7 @@
   become: true
 
 - name: install Oh My Zsh is not present
-  shell: test -d "/etc/skel/.oh-my-zsh/" || sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && mkdir /etc/skel/.oh-my-zsh && cp -pr /root/.oh-my-zsh/* /etc/skel/.oh-my-zsh/)"
+  shell: test -d "/etc/skel/.oh-my-zsh/" || sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && mkdir /etc/skel/.oh-my-zsh/)"
   # args:
   #   executable: /bin/sh
   ignore_errors: true
@@ -19,8 +19,9 @@
 
 - name: Synchronization
   synchronize:
-    src: /root/.oh-my-zsh
-    dest: /etc/skel
+    src: /root/.oh-my-zsh/
+    dest: /etc/skel/.oh-my-zsh/
+    archive: yes
   become: true
   register: ohmyzshinstall
   when: ohmyzshinstall_root is success
