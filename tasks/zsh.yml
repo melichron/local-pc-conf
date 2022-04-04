@@ -20,7 +20,7 @@
 - name: Synchronization
   synchronize:
     src: /root/.oh-my-zsh
-    dest: /etc/skel/.oh-my-zsh
+    dest: /etc/skel
   become: true
   register: ohmyzshinstall
   when: ohmyzshinstall_root is success
