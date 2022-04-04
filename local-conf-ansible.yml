@@ -9,37 +9,4 @@
   tasks:
   - name: include zsh tasks
     import_tasks: tasks/zsh.yml
-    tags: zsh
-
-  - name: include screen tasks
-    import_tasks: tasks/screen.yml
-    tags: screen
-
-  - name: include tmux tasks
-    import_tasks: tasks/tmux.yml
-    tags: tmux
-
-  - name: include tilda tasks
-    import_tasks: tasks/tilda.yml
-    tags: ['never','tilda']
-
-  - name: include vim tasks
-    import_tasks: tasks/vim.yml
-    tags: vim
-
-  - name: include bash_it tasks
-    import_tasks: tasks/bash_it.yml
-    tags: bash_it
-
-  - name: include sublime_text tasks
-    import_tasks: tasks/sublime.yml
-    tags: ['never','sublime']
-
-  - name: include win10theme tasks
-    import_tasks: tasks/win10theme.yml
-    tags: ['never','win10theme']
-
-  - name: include bash tasks
-    import_tasks: tasks/bash.yml
-    tags: bash
 ...

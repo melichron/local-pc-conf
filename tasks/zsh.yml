@@ -10,53 +10,57 @@
   become: true
 
 - name: install Oh My Zsh is not present
-  shell: test -d "$HOME/.oh-my-zsh/" || sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  shell: test -d "/etc/skel/.oh-my-zsh/" || sh -c "$(cd /etc/skel && wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   # args:
   #   executable: /bin/sh
   ignore_errors: true
+  become: true
   register: ohmyzshinstall
 
 - name: copy default .zshrc
   copy:
     src: zshrc
-    dest: "$HOME/.zshrc"
+    dest: "/etc/skel/.zshrc"
   when: ohmyzshinstall is success
   register: copyzshrc
 
 - name: clone powerlevel10k repo
   git:
     repo: 'https://github.com/romkatv/powerlevel10k.git'
-    dest: "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
+    dest: "/etc/skel/.oh-my-zsh/custom/themes/powerlevel10k"
+  become: true
   when: ohmyzshinstall is success
   register: powerlevel10krepo
 
 - name: ensure completions and functions dir
   file:
-    path: "$HOME/.oh-my-zsh/{{ item }}"
+    path: "/etc/skel/.oh-my-zsh/{{ item }}"
     state: directory
     mode: "0755"
   loop:
     - "completions"
     - "functions"
+  become: true
   register: zsh_dirs
   when: ohmyzshinstall is success
 
 - name: clone zsh-autosuggestions repo
   git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions"
-    dest: "$HOME/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    dest: "/etc/skel/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+  become: true
   when: ohmyzshinstall is success
   register: zsh_autosuggestions
 
 - name: ensure powerlevel10k theme settings file
   copy:
     src: p10k.zsh
-    dest: "$HOME/.p10k.zsh"
+    dest: "/etc/skel/.p10k.zsh"
   when: powerlevel10krepo is success
 
 - name: ensure powerlevel10k sourcing
   blockinfile:
-    path: "$HOME/.zshrc"
+    path: "/etc/skel/.zshrc"
     backup: no
     insertafter: BOF
     marker: "# {mark} powerlevel10k sourcing Block"
@@ -69,7 +73,7 @@
 
 - name: ensure powerlevel10k sourcing
   blockinfile:
-    path: "$HOME/.zshrc"
+    path: "/etc/skel/.zshrc"
     backup: no
     insertafter: EOF
     marker: "# {mark} powerlevel10k sourcing Block"
@@ -81,34 +85,16 @@
 
 - name: ensure aliases
   blockinfile:
-    path: "$HOME/.zshrc"
+    path: "/etc/skel/.zshrc"
     backup: no
     insertafter: "# Example aliases"
     marker: "# {mark} ZSH aliases Block"
     state: present
     block: |
-      if test -f ~/.ssh/id_rsa
-      then
-        ssh-add -l &>/dev/null
-        if [ "$?" = "2" ]; then
-          test -r ~/.ssh-agent-env && \
-            eval "$(<~/.ssh-agent-env)" >/dev/null
-          ssh-add -l &>/dev/null
-          if [ "$?" = "2" ]; then
-            (umask 066; ssh-agent > ~/.ssh-agent-env)
-            eval "$(<~/.ssh-agent-env)" >/dev/null
-            ssh-add ~/.ssh/id_rsa
-          fi
-        fi
-      fi
-
       alias nullrepo='git add . && git stash && git stash drop'
       alias ap='ansible-playbook'
-
-      alias logvault="vault login -method=userpass username=${USER}"
       alias ccat='pygmentize -g'
       alias showcert='openssl x509 -text -noout -in '
-      
       alias xx='sudo -s'
       alias ..="cd .."
       alias ...="cd ../../"
