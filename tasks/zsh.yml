@@ -10,7 +10,7 @@
   become: true
 
 - name: install Oh My Zsh is not present
-  shell: test -d "/etc/skel/.oh-my-zsh/" || sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && mv /root/.oh-my-zsh/ /etc/skel/)"
+  shell: test -d "/etc/skel/.oh-my-zsh/" || sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && cp -pr /root/.oh-my-zsh/ /etc/skel/)"
   # args:
   #   executable: /bin/sh
   ignore_errors: true
