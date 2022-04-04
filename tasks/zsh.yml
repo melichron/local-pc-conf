@@ -22,6 +22,7 @@
     src: zshrc
     dest: "/etc/skel/.zshrc"
   when: ohmyzshinstall is success
+  become: true
   register: copyzshrc
 
 - name: clone powerlevel10k repo
