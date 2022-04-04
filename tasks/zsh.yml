@@ -10,7 +10,7 @@
   become: true
 
 - name: install Oh My Zsh is not present
-  shell: test -d "/etc/skel/.oh-my-zsh/" || sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && mkdir /etc/skel/.oh-my-zsh/)"
+  shell: test -d "/etc/skel/.oh-my-zsh/" || sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && mkdir /etc/skel/.oh-my-zsh)"
   # args:
   #   executable: /bin/sh
   ignore_errors: true
@@ -29,22 +29,40 @@
 - name: copy default .zshrc
   copy:
     src: zshrc
-    dest: "/etc/skel/.zshrc"
+    dest: "{{ item }}"
   when: ohmyzshinstall is success
+  loop:
+    - "/etc/skel/.zshrc"
+    - "/root/.zshrc"
   become: true
   register: copyzshrc
 
 - name: clone powerlevel10k repo
   git:
     repo: 'https://github.com/romkatv/powerlevel10k.git'
-    dest: "/etc/skel/.oh-my-zsh/custom/themes/powerlevel10k"
+    dest: "{{ item }}"
   become: true
   when: ohmyzshinstall is success
+  loop:
+    - "/etc/skel/.oh-my-zsh/custom/themes/powerlevel10k"
+    - "/root/.oh-my-zsh/custom/themes/powerlevel10k"
   register: powerlevel10krepo
 
-- name: ensure completions and functions dir
+- name: ensure completions and functions dir in skel
   file:
     path: "/etc/skel/.oh-my-zsh/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "completions"
+    - "functions"
+  become: true
+  register: zsh_dirs
+  when: ohmyzshinstall is success
+
+- name: ensure completions and functions dir in root dir
+  file:
+    path: "/root/.oh-my-zsh/{{ item }}"
     state: directory
     mode: "0755"
   loop:
@@ -57,21 +75,27 @@
 - name: clone zsh-autosuggestions repo
   git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions"
-    dest: "/etc/skel/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    dest: "{{ item }}"
   become: true
   when: ohmyzshinstall is success
+  loop:
+    - "/etc/skel/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    - "/root/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
   register: zsh_autosuggestions
 
 - name: ensure powerlevel10k theme settings file
   copy:
     src: p10k.zsh
-    dest: "/etc/skel/.p10k.zsh"
+    dest: "{{ item }}"
+  loop:
+    - "/etc/skel/.p10k.zsh"
+    - "/root/.p10k.zsh"
   become: true
   when: powerlevel10krepo is success
 
 - name: ensure powerlevel10k sourcing
   blockinfile:
-    path: "/etc/skel/.zshrc"
+    path: "{{ item }}"
     backup: no
     insertafter: BOF
     marker: "# {mark} powerlevel10k sourcing Block"
@@ -81,11 +105,14 @@
         source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
       fi
   become: true
+  loop:
+    - "/etc/skel/.zshrc"
+    - "/root/.zshrc"
   when: copyzshrc is success
 
 - name: ensure powerlevel10k sourcing
   blockinfile:
-    path: "/etc/skel/.zshrc"
+    path: "{{ item }}"
     backup: no
     insertafter: EOF
     marker: "# {mark} powerlevel10k sourcing Block"
@@ -94,11 +121,14 @@
       # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
       [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
   become: true
+  loop:
+    - "/etc/skel/.zshrc"
+    - "/root/.zshrc"
   when: ohmyzshinstall
 
 - name: ensure aliases
   blockinfile:
-    path: "/etc/skel/.zshrc"
+    path: "{{ item }}"
     backup: no
     insertafter: "# Example aliases"
     marker: "# {mark} ZSH aliases Block"
@@ -115,4 +145,7 @@
       alias gsv='git status -vv'
       alias cgd='if git rev-parse --is-inside-work-tree --quiet >/dev/null 2>/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
   become: true
+  loop:
+    - "/etc/skel/.zshrc"
+    - "/root/.zshrc"
   when: copyzshrc is success
