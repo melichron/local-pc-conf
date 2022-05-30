@@ -9,4 +9,8 @@
   tasks:
   - name: include zsh tasks
     import_tasks: tasks/zsh.yml
+
+  - name: include zsh tasks
+    import_tasks: tasks/amazon_zsh.yml
+    tags: ["never", "amz"]
 ...
