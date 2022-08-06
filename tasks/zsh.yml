@@ -1,73 +1,48 @@
-- name: install packages for zsh
+- name: install packages for ZSH
   package:
-    name: "{{ item }}"
+    name: ["zsh", "powerline", "git", "python3-pygments"]
     state: latest
+  become: true
+
+- name: clone Oh-My-ZSH if not present
+  command: "git clone -c core.autocrlf=input --depth=1 https://github.com/ohmyzsh/ohmyzsh .oh-my-zsh"
+  args:
+    chdir: "{{ item }}"
+    creates: "{{ item }}/.oh-my-zsh"
+  tags:
+    # Suppress warning: [ANSIBLE0006] git used in place of git module
+    # Git module doesn't allow us to set `core.autocrlf=input`.
+    - skip_ansible_lint
   loop:
-    - "zsh"
-    - "powerline"
-    - "git"
-    - "python3-pygments"
-  become: true
-
-- name: install Oh My Zsh is not present
-  shell: test -d "/etc/skel/.oh-my-zsh/" || sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh && mkdir /etc/skel/.oh-my-zsh)"
-  # args:
-  #   executable: /bin/sh
-  ignore_errors: true
-  become: true
-  register: ohmyzshinstall_root
-
-- name: Synchronization
-  synchronize:
-    src: /root/.oh-my-zsh/
-    dest: /etc/skel/.oh-my-zsh/
-    archive: yes
-  become: true
+    - /root
+    - /etc/skel
   register: ohmyzshinstall
-  when: ohmyzshinstall_root is success
-
-- name: copy default .zshrc
-  copy:
-    src: zshrc
-    dest: "{{ item }}"
-  when: ohmyzshinstall is success
-  loop:
-    - "/etc/skel/.zshrc"
-    - "/root/.zshrc"
   become: true
-  register: copyzshrc
 
 - name: clone powerlevel10k repo
   git:
     repo: 'https://github.com/romkatv/powerlevel10k.git'
-    dest: "{{ item }}"
-  become: true
+    dest: "{{ item }}/.oh-my-zsh/custom/themes/powerlevel10k"
   when: ohmyzshinstall is success
   loop:
-    - "/etc/skel/.oh-my-zsh/custom/themes/powerlevel10k"
-    - "/root/.oh-my-zsh/custom/themes/powerlevel10k"
+    - /etc/skel
+    - /root
   register: powerlevel10krepo
-
-- name: ensure completions and functions dir in skel
-  file:
-    path: "/etc/skel/.oh-my-zsh/{{ item }}"
-    state: directory
-    mode: "0755"
-  loop:
-    - "completions"
-    - "functions"
   become: true
-  register: zsh_dirs
-  when: ohmyzshinstall is success
 
-- name: ensure completions and functions dir in root dir
+- name: ensure completions and functions dir
   file:
-    path: "/root/.oh-my-zsh/{{ item }}"
+    path: "{{ item.0 }}/.oh-my-zsh/{{ item.1 }}"
     state: directory
     mode: "0755"
-  loop:
-    - "completions"
-    - "functions"
+  loop: "{{ root_folders|product(zsh_folders)|list }}"
+  vars:
+    root_folders:
+      - /root
+      - /etc/skel
+    zsh_folders:
+      - "completions"
+      - "functions"
   become: true
   register: zsh_dirs
   when: ohmyzshinstall is success
@@ -75,77 +50,52 @@
 - name: clone zsh-autosuggestions repo
   git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions"
-    dest: "{{ item }}"
+    dest: "{{ item }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
   become: true
   when: ohmyzshinstall is success
   loop:
-    - "/etc/skel/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-    - "/root/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    - /root
+    - /etc/skel
   register: zsh_autosuggestions
 
 - name: ensure powerlevel10k theme settings file
   copy:
     src: p10k.zsh
-    dest: "{{ item }}"
+    dest: "{{ item }}/.p10k.zsh"
   loop:
-    - "/etc/skel/.p10k.zsh"
-    - "/root/.p10k.zsh"
-  become: true
+    - /root
+    - /etc/skel
   when: powerlevel10krepo is success
-
-- name: ensure powerlevel10k sourcing
-  blockinfile:
-    path: "{{ item }}"
-    backup: no
-    insertafter: BOF
-    marker: "# {mark} powerlevel10k sourcing Block"
-    state: present
-    block: |
-      if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-        source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-      fi
   become: true
-  loop:
-    - "/etc/skel/.zshrc"
-    - "/root/.zshrc"
-  when: copyzshrc is success
 
-- name: ensure powerlevel10k sourcing
-  blockinfile:
-    path: "{{ item }}"
-    backup: no
-    insertafter: EOF
-    marker: "# {mark} powerlevel10k sourcing Block"
-    state: present
-    block: |
-      # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-      [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-  become: true
-  loop:
-    - "/etc/skel/.zshrc"
-    - "/root/.zshrc"
-  when: ohmyzshinstall
+- name: Set the aliases list
+  set_fact:
+    ZSH_aliases:
+      - alias nullrepo='git add . && git stash && git stash drop'
+      - alias ap='ansible-playbook'
+      - alias logvault="vault login -method=userpass username=${USER}"
+      - alias ccat='pygmentize -g '
+      - alias showcert='openssl x509 -text -noout -in '
+      - alias xx='sudo -s --shell /bin/zsh'
+      - alias ..="cd .."
+      - alias ...="cd ../../"
+      - alias gtc='git add . && git commit -m "`curl -s http://whatthecommit.com/index.txt`" && git push'
+      - alias gsv='git status -vv'
+      - alias cgd='if git rev-parse --is-inside-work-tree --quiet >/dev/null 2>/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
 
-- name: ensure aliases
-  blockinfile:
-    path: "{{ item }}"
-    backup: no
-    insertafter: "# Example aliases"
-    marker: "# {mark} ZSH aliases Block"
-    state: present
-    block: |
-      alias nullrepo='git add . && git stash && git stash drop'
-      alias ap='ansible-playbook'
-      alias ccat='pygmentize -g'
-      alias showcert='openssl x509 -text -noout -in '
-      alias xx='sudo -s'
-      alias ..="cd .."
-      alias ...="cd ../../"
-      alias gtc='git add . && git commit -m "`curl -s http://whatthecommit.com/index.txt`" && git push'
-      alias gsv='git status -vv'
-      alias cgd='if git rev-parse --is-inside-work-tree --quiet >/dev/null 2>/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
-  become: true
+- name: Set the folder shortcut list
+  set_fact:
+    ZSH_folder_shortcuts:
+      - hash -d volumes=/var/lib/docker/volumes
+
+- name: define .zshrc from template
+  template:
+    dest: "{{ item }}/.zshrc"
+    src: zshrc.j2
+    mode: '0664'
   loop:
-    - "/etc/skel/.zshrc"
-    - "/root/.zshrc"
-  when: copyzshrc is success
+    - /root
+    - /etc/skel
+  when: ohmyzshinstall is success
+  register: copyzshrc
+  become: true
