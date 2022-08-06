@@ -1,13 +1,9 @@
 - block:
-  - name: install screen
+  - name: install screen packages
     package:
-      name: "{{ item }}"
+      name: ["screen", "curl", "git"]
       state: latest
-    loop:
-    - "screen"
-    - "curl"
-    - "git"
-    become: yes
+    become: true
 
   - name: define .screenrc
     copy:

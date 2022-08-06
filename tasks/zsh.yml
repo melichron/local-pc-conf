@@ -1,36 +1,28 @@
-- name: install packages for zsh
+- name: install packages for ZSH
   package:
-    name: "{{ item }}"
+    name: ["zsh", "powerline", "git", "python3-pygments"]
     state: latest
-  loop:
-    - "zsh"
-    - "powerline"
-    - "git"
-    - "python3-pygments"
   become: true
 
-- name: install Oh My Zsh is not present
-  shell: test -d "$HOME/.oh-my-zsh/" || sh -c "$(wget -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-  # args:
-  #   executable: /bin/sh
-  ignore_errors: true
+- name: clone Oh-My-ZSH if not present
+  command: "git clone -c core.autocrlf=input --depth=1 https://github.com/ohmyzsh/ohmyzsh .oh-my-zsh"
+  args:
+    chdir: "$HOME"
+    creates: "$HOME/.oh-my-zsh"
+  tags:
+    # Suppress warning: [ANSIBLE0006] git used in place of git module
+    # Git module doesn't allow us to set `core.autocrlf=input`.
+    - skip_ansible_lint
   register: ohmyzshinstall
-
-- name: copy default .zshrc
-  copy:
-    src: zshrc
-    dest: "$HOME/.zshrc"
-  when: ohmyzshinstall is success
-  register: copyzshrc
 
 - name: clone powerlevel10k repo
   git:
-    repo: 'https://github.com/romkatv/powerlevel10k.git'
+    repo: "https://github.com/romkatv/powerlevel10k.git"
     dest: "$HOME/.oh-my-zsh/custom/themes/powerlevel10k"
   when: ohmyzshinstall is success
   register: powerlevel10krepo
 
-- name: ensure completions and functions dir
+- name: ensure completions and functions plugins dir
   file:
     path: "$HOME/.oh-my-zsh/{{ item }}"
     state: directory
@@ -54,64 +46,29 @@
     dest: "$HOME/.p10k.zsh"
   when: powerlevel10krepo is success
 
-- name: ensure powerlevel10k sourcing
-  blockinfile:
-    path: "$HOME/.zshrc"
-    backup: no
-    insertafter: BOF
-    marker: "# {mark} powerlevel10k sourcing Block"
-    state: present
-    block: |
-      if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-        source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-      fi
-  when: copyzshrc is success
+- name: Set the aliases list
+  set_fact:
+    ZSH_aliases:
+      - alias nullrepo='git add . && git stash && git stash drop'
+      - alias ap='ansible-playbook'
+      - alias logvault="vault login -method=userpass username=${USER}"
+      - alias ccat='pygmentize -g '
+      - alias showcert='openssl x509 -text -noout -in '
+      - alias xx='sudo -s --shell /bin/zsh'
+      - alias ..="cd .."
+      - alias ...="cd ../../"
+      - alias gtc='git add . && git commit -m "`curl -s http://whatthecommit.com/index.txt`" && git push'
+      - alias gsv='git status -vv'
+      - alias cgd='if git rev-parse --is-inside-work-tree --quiet >/dev/null 2>/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
 
-- name: ensure powerlevel10k sourcing
-  blockinfile:
-    path: "$HOME/.zshrc"
-    backup: no
-    insertafter: EOF
-    marker: "# {mark} powerlevel10k sourcing Block"
-    state: present
-    block: |
-      # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-      [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-  when: ohmyzshinstall
+- name: Set the folder shortcut list
+  set_fact:
+    ZSH_folder_shortcuts:
+      - hash -d volumes=/var/lib/docker/volumes
 
-- name: ensure aliases
-  blockinfile:
-    path: "$HOME/.zshrc"
-    backup: no
-    insertafter: "# Example aliases"
-    marker: "# {mark} ZSH aliases Block"
-    state: present
-    block: |
-      if test -f ~/.ssh/id_rsa
-      then
-        ssh-add -l &>/dev/null
-        if [ "$?" = "2" ]; then
-          test -r ~/.ssh-agent-env && \
-            eval "$(<~/.ssh-agent-env)" >/dev/null
-          ssh-add -l &>/dev/null
-          if [ "$?" = "2" ]; then
-            (umask 066; ssh-agent > ~/.ssh-agent-env)
-            eval "$(<~/.ssh-agent-env)" >/dev/null
-            ssh-add ~/.ssh/id_rsa
-          fi
-        fi
-      fi
-
-      alias nullrepo='git add . && git stash && git stash drop'
-      alias ap='ansible-playbook'
-
-      alias logvault="vault login -method=userpass username=${USER}"
-      alias ccat='pygmentize -g '
-      alias showcert='openssl x509 -text -noout -in '
-
-      alias xx='sudo -s --shell /bin/zsh'
-      alias ..="cd .."
-      alias ...="cd ../../"
-      alias gtc='git add . && git commit -m "`curl -s http://whatthecommit.com/index.txt`" && git push'
-      alias gsv='git status -vv'
-      alias cgd='if git rev-parse --is-inside-work-tree --quiet >/dev/null 2>/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
+- name: define .zshrc from template
+  template:
+    dest: "$HOME/.zshrc"
+    src: zshrc.j2
+    mode: '0664'
+  when: ohmyzshinstall is success
