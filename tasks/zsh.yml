@@ -106,10 +106,10 @@
       alias ap='ansible-playbook'
 
       alias logvault="vault login -method=userpass username=${USER}"
-      alias ccat='pygmentize -g'
+      alias ccat='pygmentize -g '
       alias showcert='openssl x509 -text -noout -in '
-      
-      alias xx='sudo -s'
+
+      alias xx='sudo -s --shell /bin/zsh'
       alias ..="cd .."
       alias ...="cd ../../"
       alias gtc='git add . && git commit -m "`curl -s http://whatthecommit.com/index.txt`" && git push'

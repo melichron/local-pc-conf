@@ -5,7 +5,7 @@
   loop:
     - vim
     - git
-  become: yes
+  become: true
 
 - name: List of Vim plugins
   set_fact:
@@ -23,8 +23,8 @@
       - 'itchyny/lightline.vim'
       - 'tpope/vim-abolish'
 
-- name: create autoload directory for Vim 
-  file: 
+- name: create autoload directory for Vim
+  file:
     state: directory
     path: "{{ lookup('env','HOME') }}/.vim/autoload"
   register: autoload_vim
