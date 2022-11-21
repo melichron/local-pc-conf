@@ -1,11 +1,11 @@
-- name: install vim packages
-  package:
-    name: "{{ item }}"
-    state: latest
-  loop:
-    - vim
-    - git
-  become: true
+# - name: install vim packages
+#   package:
+#     name: "{{ item }}"
+#     state: latest
+#   loop:
+#     - vim
+#     - git
+#   become: true
 
 - name: List of Vim plugins
   set_fact:
@@ -22,6 +22,7 @@
       - 'chr4/nginx.vim'
       - 'itchyny/lightline.vim'
       - 'tpope/vim-abolish'
+      - 'vim-python/python-syntax'
 
 - name: create autoload directory for Vim
   file:

@@ -146,7 +146,7 @@ endif
 
 call plug#begin('~/.vim/plugged')
 {% for plugin in VIM_plugins %}
-Plug "{{ plugin }}"
+Plug '{{ plugin }}'
 {% endfor %}
 call plug#end()
 colorscheme ron
@@ -158,7 +158,7 @@ let g:indentLine_char = '.'
 
 let g:indentLine_color_term = 98
 
-let g:indentLine_leadingSpaceEnabled = 1
-let g:indentLine_leadingSpaceChar = '🞄'
+" let g:indentLine_leadingSpaceEnabled = 1
+" let g:indentLine_leadingSpaceChar = '🞄'
 map  <C-l> :tabn<CR>
 map  <C-h> :tabp<CR>
