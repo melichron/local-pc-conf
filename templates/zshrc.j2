@@ -80,6 +80,9 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 plugins=(git docker terraform helm kubectl vscode colorize docker-compose sudo aws history zsh-autosuggestions ubuntu singlechar safe-paste)
 source $ZSH/oh-my-zsh.sh
 
+zstyle ':completion:*:*:docker:*' option-stacking yes
+zstyle ':completion:*:*:docker-*:*' option-stacking yes
+
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
