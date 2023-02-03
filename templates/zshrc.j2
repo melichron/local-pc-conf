@@ -82,6 +82,9 @@ source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
+zstyle ':completion:*:*:docker:*' option-stacking yes
+zstyle ':completion:*:*:docker-*:*' option-stacking yes
+
 # export MANPATH="/usr/local/man:$MANPATH"
 
 # You may need to manually set your language environment
