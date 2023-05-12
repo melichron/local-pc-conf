@@ -1,6 +1,12 @@
 ---
 - hosts: localhost
   connection: local
+  
+  pre_tasks:
+  - name: show user and hostname
+    debug:
+      msg: "Setup configuration for user {{ ansible_user }} in {{ inventory_hostname }}"
+  
   tasks:
   - name: include zsh tasks
     import_tasks: tasks/zsh.yml
