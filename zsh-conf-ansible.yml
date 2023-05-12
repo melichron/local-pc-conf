@@ -1,5 +1,5 @@
 ---
-- hosts: all:!localhost
+- hosts: all
   tasks:
   - name: include zsh tasks
     import_tasks: tasks/zsh.yml
