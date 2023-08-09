@@ -1,6 +1,6 @@
 ---
 - name: Install and setup Oh-My-ZSH
-- hosts: localhost
+  hosts: localhost
   connection: local
   pre_tasks:
     - name: Show user and hostname
