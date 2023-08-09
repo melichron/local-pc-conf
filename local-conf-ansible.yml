@@ -2,10 +2,6 @@
 - name: Install and setup Oh-My-ZSH
   hosts: localhost
   connection: local
-  pre_tasks:
-    - name: Show user and hostname
-      debug:
-        msg: "Setup configuration for user {{ ansible_user }} in {{ inventory_hostname }}"
 
   tasks:
     - name: Snclude zsh tasks
