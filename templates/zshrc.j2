@@ -124,11 +124,11 @@ fi
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-{% for alias in ZSH_aliases %}
+{% for alias in zsh_aliases %}
 {{ alias }}
 {% endfor %}
 
-{% for shortcut in ZSH_folder_shortcuts %}
+{% for shortcut in zsh_folder_shortcuts %}
 {{ shortcut }}
 {% endfor %}
 

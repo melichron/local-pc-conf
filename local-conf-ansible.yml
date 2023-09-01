@@ -1,16 +1,17 @@
 ---
-- hosts: localhost
+- name: Install ZSH
+  hosts: localhost
   connection: local
+
   pre_tasks:
-  - name: show user and hostname
-    debug:
-      msg: "Setup configuration for user {{ ansible_user }} in {{ inventory_hostname }}"
+    - name: Show user and hostname
+      ansible.builtin.debug:
+        msg: "Setup configuration for user {{ ansible_user }} in {{ inventory_hostname }}"
 
   tasks:
-  - name: include zsh tasks
-    import_tasks: tasks/zsh.yml
+    - name: Include ZSH tasks
+      ansible.builtin.import_tasks: tasks/zsh.yml
 
-  - name: include zsh tasks
-    import_tasks: tasks/amazon_zsh.yml
-    tags: ["never", "amz"]
-...
+    - name: Include ZSH tasks
+      ansible.builtin.import_tasks: tasks/amazon_zsh.yml
+      tags: ["never", "amz"]
