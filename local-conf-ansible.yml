@@ -4,5 +4,5 @@
   connection: local
 
   tasks:
-    - name: Snclude zsh tasks
-      import_tasks: tasks/zsh.yml
+    - name: Include ZSH tasks
+      ansible.builtin.import_tasks: tasks/zsh.yml

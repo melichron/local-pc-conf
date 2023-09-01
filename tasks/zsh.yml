@@ -1,11 +1,5 @@
-# - name: install packages for ZSH
-#   package:
-#     name: ["zsh", "powerline", "git", "python3-pygments"]
-#     state: latest
-#   become: true
-
-- name: clone Oh-My-ZSH if not present
-  command: "git clone -c core.autocrlf=input --depth=1 https://github.com/ohmyzsh/ohmyzsh .oh-my-zsh"
+- name: Clone Oh-My-ZSH if not present
+  ansible.builtin.command: "git clone -c core.autocrlf=input --depth=1 https://github.com/ohmyzsh/ohmyzsh .oh-my-zsh"
   args:
     chdir: "{{ item }}"
     creates: "{{ item }}/.oh-my-zsh"
@@ -17,21 +11,23 @@
     - "{{ lookup('env', 'HOME') }}"
   register: ohmyzshinstall
 
-- name: clone powerlevel10k repo
-  git:
+- name: Clone powerlevel10k repo
+  ansible.builtin.git:
     repo: 'https://github.com/romkatv/powerlevel10k.git'
     dest: "{{ item }}/.oh-my-zsh/custom/themes/powerlevel10k"
+    single_branch: true
+    version: "v1.19.0"
   when: ohmyzshinstall is success
   loop:
     - "{{ lookup('env', 'HOME') }}"
   register: powerlevel10krepo
 
-- name: ensure completions and functions dir
-  file:
+- name: Ensure completions and functions dir
+  ansible.builtin.file:
     path: "{{ item.0 }}/.oh-my-zsh/{{ item.1 }}"
     state: directory
-    mode: "0755"
-  loop: "{{ root_folders|product(zsh_folders)|list }}"
+    mode: '1755'
+  loop: "{{ root_folders | product(zsh_folders) | list }}"
   vars:
     root_folders:
       - "{{ lookup('env', 'HOME') }}"
@@ -41,28 +37,31 @@
   register: zsh_dirs
   when: ohmyzshinstall is success
 
-- name: clone zsh-autosuggestions repo
-  git:
+- name: Clone zsh-autosuggestions repo
+  ansible.builtin.git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions"
     dest: "{{ item }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    single_branch: true
+    version: "v0.7.0"
   when: ohmyzshinstall is success
   loop:
-      - "{{ lookup('env', 'HOME') }}"
+    - "{{ lookup('env', 'HOME') }}"
   register: zsh_autosuggestions
 
-- name: ensure powerlevel10k theme settings file
-  copy:
+- name: Ensure powerlevel10k theme settings file
+  ansible.builtin.copy:
     src: p10k.zsh
     dest: "{{ item }}/.p10k.zsh"
+    mode: '0664'
   loop:
-      - "{{ lookup('env', 'HOME') }}"
+    - "{{ lookup('env', 'HOME') }}"
   when: powerlevel10krepo is success
 
 - name: Set the aliases list
-  set_fact:
-    ZSH_aliases:
+  ansible.builtin.set_fact:
+    zsh_aliases:
       - alias nullrepo='git add . && git stash && git stash drop'
-      - alias ap='ansible-playbook'
+      - alias ap='ansible-playbook '
       - alias logvault="vault login -method=userpass username=${USER}"
       - alias ccat='pygmentize -g '
       - alias showcert='openssl x509 -text -noout -in '
@@ -71,19 +70,29 @@
       - alias ...="cd ../../"
       - alias gtc='git add . && git commit -m "`curl -s http://whatthecommit.com/index.txt`" && git push'
       - alias gsv='git status -vv'
-      - alias cgd='if git rev-parse --is-inside-work-tree --quiet >/dev/null 2>/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
+      - alias gsvv='git status -v'
+      - alias cgd='if git rev-parse --is-inside-work-tree -q 2>&1 >/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
+      - alias hs='hub sync'
+      - alias senv='source bin/activate'
+      - alias kkk='kubectl get pods'
+      - alias sz='source ~/.zshrc'
+      - alias hh='history | grep '
+      - alias stg='find . -type d -name ".terragrunt-cache"'
+      - alias dtg='find . -type d -name ".terragrunt-cache" -prune -exec rm -rf {} \;'
+      - alias kx='kubectx -'
+      - alias kb='kubectx '
+      - alias km='kubens '
+      - alias kn='kubens -'
+      - alias kl='kubie ns'
+      - alias ko='kubie ctx'
+      - alias ctg='find . -type d -name .terragrunt-cache | xargs rm -rfv - && git clean -xdf'
 
-- name: Set the folder shortcut list
-  set_fact:
-    ZSH_folder_shortcuts:
-      - hash -d volumes=/var/lib/docker/volumes
-
-- name: define .zshrc from template
-  template:
+- name: Define .zshrc from template
+  ansible.builtin.template:
     dest: "{{ item }}/.zshrc"
     src: zshrc.j2
     mode: '0664'
   loop:
-      - "{{ lookup('env', 'HOME') }}"
+    - "{{ lookup('env', 'HOME') }}"
   when: ohmyzshinstall is success
   register: copyzshrc
