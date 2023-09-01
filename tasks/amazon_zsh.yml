@@ -1,11 +1,17 @@
-- name: install packages for zsh
-  package:
-    name: ["zsh", "git", "python3-pygments"]
+- name: Install packages for ZSH
+  ansible.builtin.package:
+    name:
+      - "zsh"
+      - "git"
+      - "python3-pygments"
     state: latest
   become: true
+  tags:
+    # Suppress warning: Package installs should not use latest.
+    - skip_ansible_lint
 
-- name: clone Oh-My-ZSH if not present
-  command: "git clone -c core.autocrlf=input --depth=1 https://github.com/ohmyzsh/ohmyzsh .oh-my-zsh"
+- name: Clone Oh-My-ZSH if not present
+  ansible.builtin.command: "git clone -c core.autocrlf=input --depth=1 https://github.com/ohmyzsh/ohmyzsh .oh-my-zsh"
   args:
     chdir: "{{ item }}"
     creates: "{{ item }}/.oh-my-zsh"
@@ -14,48 +20,54 @@
     # Git module doesn't allow us to set `core.autocrlf=input`.
     - skip_ansible_lint
   loop:
-    - /root
-    - /etc/skel
+    - "/root"
+    - "/etc/skel"
   register: ohmyzshinstall
   become: true
 
-- name: clone powerlevel10k repo
-  git:
+- name: Clone powerlevel10k repo
+  ansible.builtin.git:
     repo: 'https://github.com/romkatv/powerlevel10k.git'
     dest: "{{ item }}/.oh-my-zsh/custom/themes/powerlevel10k"
+    single_branch: true
+    version: "v1.19.0"
   when: ohmyzshinstall is success
   loop:
-    - /etc/skel
-    - /root
+    - "/root"
+    - "/etc/skel"
   register: powerlevel10krepo
   become: true
 
-- name: clone powerlevel10k repo
-  git:
+- name: Clone powerlevel10k repo
+  ansible.builtin.git:
     repo: 'https://github.com/powerline/fonts.git'
     dest: "/tmp/fonts"
+    version: "2015-12-04"
   when: ohmyzshinstall is success
   register: clone_fonts
   become: true
 
-- name: install Powerline fonts
-  command: "bash install.sh"
+- name: Install Powerline fonts
+  ansible.builtin.command: "bash install.sh"
   args:
     chdir: /tmp/fonts
   when: clone_fonts is success
   ignore_errors: true
   become: true
+  tags:
+    # Suppress warning
+    - skip_ansible_lint
 
-- name: ensure completions and functions dir
-  file:
+- name: Ensure completions and functions dir
+  ansible.builtin.file:
     path: "{{ item.0 }}/.oh-my-zsh/{{ item.1 }}"
     state: directory
     mode: "0755"
-  loop: "{{ root_folders|product(zsh_folders)|list }}"
+  loop: "{{ root_folders | product(zsh_folders) | list }}"
   vars:
     root_folders:
-      - /root
-      - /etc/skel
+      - "/etc/skel"
+      - "/root"
     zsh_folders:
       - "completions"
       - "functions"
@@ -63,30 +75,33 @@
   when: ohmyzshinstall is success
   become: true
 
-- name: clone zsh-autosuggestions repo
-  git:
+- name: Clone zsh-autosuggestions repo
+  ansible.builtin.git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions"
     dest: "{{ item }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+    single_branch: true
+    version: "v0.7.0"
   become: true
   when: ohmyzshinstall is success
   loop:
-    - /root
-    - /etc/skel
+    - "/etc/skel"
+    - "/root"
   register: zsh_autosuggestions
 
-- name: ensure powerlevel10k theme settings file
-  copy:
+- name: Ensure powerlevel10k theme settings file
+  ansible.builtin.copy:
     src: p10k.zsh
     dest: "{{ item }}/.p10k.zsh"
+    mode: '0644'
   loop:
-    - /root
-    - /etc/skel
+    - "/etc/skel"
+    - "/root"
   when: powerlevel10krepo is success
   become: true
 
 - name: Set the aliases list
-  set_fact:
-    ZSH_aliases:
+  ansible.builtin.set_fact:
+    zsh_aliases:
       - alias nullrepo='git add . && git stash && git stash drop'
       - alias ap='ansible-playbook'
       - alias logvault="vault login -method=userpass username=${USER}"
@@ -97,21 +112,21 @@
       - alias ...="cd ../../"
       - alias gtc='git add . && git commit -m "`curl -s http://whatthecommit.com/index.txt`" && git push'
       - alias gsv='git status -vv'
-      - alias cgd='if git rev-parse --is-inside-work-tree --quiet >/dev/null 2>/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
+      - alias cgd='if git rev-parse --is-inside-work-tree -q 2>&1 >/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
 
 - name: Set the folder shortcut list
-  set_fact:
-    ZSH_folder_shortcuts:
+  ansible.builtin.set_fact:
+    zsh_folder_shortcuts:
       - hash -d volumes=/var/lib/docker/volumes
 
-- name: define .zshrc from template
-  template:
+- name: Define .zshrc from template
+  ansible.builtin.template:
     dest: "{{ item }}/.zshrc"
     src: zshrc.j2
     mode: '0664'
   loop:
-    - /root
-    - /etc/skel
+    - "/etc/skel"
+    - "/root"
   when: ohmyzshinstall is success
   register: copyzshrc
   become: true
