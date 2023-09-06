@@ -10,8 +10,8 @@
 
   tasks:
     - name: Include ZSH tasks
-      ansible.builtin.import_tasks: tasks/zsh.yml
+      import_tasks: tasks/zsh.yml
 
     - name: Include ZSH tasks
-      ansible.builtin.import_tasks: tasks/amazon_zsh.yml
+      import_tasks: tasks/amazon_zsh.yml
       tags: ["never", "amz"]
