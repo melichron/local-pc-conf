@@ -1,5 +1,5 @@
 - name: Install packages for ZSH
-  ansible.builtin.package:
+  package:
     name:
       - "zsh"
       - "powerline"
@@ -12,7 +12,7 @@
     - skip_ansible_lint
 
 - name: Clone Oh-My-ZSH if not present
-  ansible.builtin.command: "git clone -c core.autocrlf=input --depth=1 https://github.com/ohmyzsh/ohmyzsh .oh-my-zsh"
+  command: "git clone -c core.autocrlf=input --depth=1 https://github.com/ohmyzsh/ohmyzsh .oh-my-zsh"
   args:
     chdir: "{{ item }}"
     creates: "{{ item }}/.oh-my-zsh"
@@ -27,7 +27,7 @@
   become: true
 
 - name: Clone powerlevel10k repo
-  ansible.builtin.git:
+  git:
     repo: 'https://github.com/romkatv/powerlevel10k.git'
     dest: "{{ item }}/.oh-my-zsh/custom/themes/powerlevel10k"
     version: "v1.19.0"
@@ -39,7 +39,7 @@
   become: true
 
 - name: Ensure completions and functions dir
-  ansible.builtin.file:
+  file:
     path: "{{ item.0 }}/.oh-my-zsh/{{ item.1 }}"
     state: directory
     mode: '1755'
@@ -56,7 +56,7 @@
   when: ohmyzshinstall is success
 
 - name: Clone zsh-autosuggestions repo
-  ansible.builtin.git:
+  git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions"
     dest: "{{ item }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
     version: "v0.7.0"
@@ -68,7 +68,7 @@
   register: zsh_autosuggestions
 
 - name: Ensure powerlevel10k theme settings file
-  ansible.builtin.copy:
+  copy:
     src: p10k.zsh
     dest: "{{ item }}/.p10k.zsh"
     mode: '0644'
@@ -79,7 +79,7 @@
   become: true
 
 - name: Set the aliases list
-  ansible.builtin.set_fact:
+  set_fact:
     zsh_aliases:
       - alias nullrepo='git add . && git stash && git stash drop'
       - alias ap='ansible-playbook'
@@ -94,12 +94,12 @@
       - alias cgd='if git rev-parse --is-inside-work-tree -q 2>&1 >/dev/null; then cd $(git rev-parse --show-toplevel); else echo "Not in Git repository!"; fi'
 
 - name: Set the folder shortcut list
-  ansible.builtin.set_fact:
+  set_fact:
     zsh_folder_shortcuts:
       - hash -d volumes=/var/lib/docker/volumes
 
 - name: Define .zshrc from template
-  ansible.builtin.template:
+  template:
     dest: "{{ item }}/.zshrc"
     src: zshrc.j2
     mode: '0664'
