@@ -30,7 +30,6 @@
   ansible.builtin.git:
     repo: 'https://github.com/romkatv/powerlevel10k.git'
     dest: "{{ item }}/.oh-my-zsh/custom/themes/powerlevel10k"
-    single_branch: true
     version: "v1.19.0"
   when: ohmyzshinstall is success
   loop:
@@ -60,7 +59,6 @@
   ansible.builtin.git:
     repo: "https://github.com/zsh-users/zsh-autosuggestions"
     dest: "{{ item }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-    single_branch: true
     version: "v0.7.0"
   become: true
   when: ohmyzshinstall is success
