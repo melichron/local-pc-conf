@@ -16,7 +16,7 @@
     repo: 'https://github.com/romkatv/powerlevel10k.git'
     dest: "{{ item }}/.oh-my-zsh/custom/themes/powerlevel10k"
     single_branch: true
-    version: "v1.19.0"
+    version: "v1.20.0"
   when: ohmyzshinstall is success
   loop:
     - "{{ lookup('env', 'HOME') }}"
@@ -42,7 +42,7 @@
     repo: "https://github.com/zsh-users/zsh-autosuggestions"
     dest: "{{ item }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
     single_branch: true
-    version: "v0.7.0"
+    version: "v0.7.1"
   when: ohmyzshinstall is success
   loop:
     - "{{ lookup('env', 'HOME') }}"
@@ -62,7 +62,6 @@
     zsh_aliases:
       - alias nullrepo='git add . && git stash && git stash drop'
       - alias ap='ansible-playbook '
-      - alias logvault="vault login -method=userpass username=${USER}"
       - alias ccat='pygmentize -g '
       - alias showcert='openssl x509 -text -noout -in '
       - alias xx='sudo -s --shell /bin/zsh'
