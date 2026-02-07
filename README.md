@@ -18,3 +18,14 @@ Finally, execute playbook:
 ansible-playbook local-pc-conf.yml
 ```
 and wait.
+
+Or install only `oh-my-zsh` with script with `curl`
+
+```shell
+curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash
+```
+or `wget`
+
+```shell
+wget -qO- https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash
+```
