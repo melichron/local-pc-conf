@@ -29,16 +29,17 @@ backup_file() {
 usage() {
     cat <<'USAGE_EOF'
 Usage:
-  install-oh-my-zsh.sh [zsh|tmux|screen|all]
-  install-oh-my-zsh.sh --target [zsh|tmux|screen|all]
+  install-oh-my-zsh.sh [zsh|tmux|screen|bash-it|all]
+  install-oh-my-zsh.sh --target [zsh|tmux|screen|bash-it|all]
 
 Environment:
-  INSTALL_TARGET=zsh|tmux|screen|all
+  INSTALL_TARGET=zsh|tmux|screen|bash-it|all
 
 Examples:
   curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash
   curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- tmux
   curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- screen
+  curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- bash-it
   curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | INSTALL_TARGET=all bash
 USAGE_EOF
 }
@@ -48,14 +49,14 @@ parse_args() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-        zsh | tmux | screen | all)
+        zsh | tmux | screen | bash-it | all)
             [[ -z "$cli_target" ]] || die "Target already specified: $cli_target"
             cli_target="$1"
             shift
             ;;
         -t | --target)
             shift
-            [[ $# -gt 0 ]] || die "--target requires a value: zsh|tmux|screen|all"
+            [[ $# -gt 0 ]] || die "--target requires a value: zsh|tmux|screen|bash-it|all"
             [[ -z "$cli_target" ]] || die "Target already specified: $cli_target"
             cli_target="$1"
             shift
@@ -65,7 +66,7 @@ parse_args() {
             exit 0
             ;;
         *)
-            die "Unknown argument: $1 (expected zsh|tmux|screen|all, --target, --help)"
+            die "Unknown argument: $1 (expected zsh|tmux|screen|bash-it|all, --target, --help)"
             ;;
         esac
     done
@@ -79,9 +80,9 @@ parse_args() {
     fi
 
     case "$INSTALL_TARGET" in
-    zsh | tmux | screen | all) ;;
+    zsh | tmux | screen | bash-it | all) ;;
     *)
-        die "Unsupported target: ${INSTALL_TARGET}. Use zsh, tmux, screen, or all."
+        die "Unsupported target: ${INSTALL_TARGET}. Use zsh, tmux, screen, bash-it, or all."
         ;;
     esac
 }
@@ -96,6 +97,10 @@ target_includes_tmux() {
 
 target_includes_screen() {
     [[ "$INSTALL_TARGET" == "screen" || "$INSTALL_TARGET" == "all" ]]
+}
+
+target_includes_bash_it() {
+    [[ "$INSTALL_TARGET" == "bash-it" || "$INSTALL_TARGET" == "all" ]]
 }
 
 install_packages_ubuntu() {
@@ -118,6 +123,9 @@ install_packages_ubuntu() {
     if target_includes_screen; then
         packages+=(screen)
     fi
+    if target_includes_bash_it; then
+        packages+=(git)
+    fi
 
     log "Installing packages via apt: ${packages[*]}"
     ${sudo_cmd} apt-get update -y
@@ -135,6 +143,9 @@ install_packages_macos() {
     fi
     if target_includes_screen; then
         packages+=(screen)
+    fi
+    if target_includes_bash_it; then
+        packages+=(git)
     fi
 
     if have_cmd brew; then
@@ -185,6 +196,14 @@ ensure_requirements() {
     fi
     if target_includes_screen && ! have_cmd screen; then
         die "screen is required for screen setup but not installed. Install screen and re-run."
+    fi
+    if target_includes_bash_it; then
+        if ! have_cmd git; then
+            die "git is required for bash-it setup but not installed. Install git and re-run."
+        fi
+        if ! have_cmd bash; then
+            die "bash is required for bash-it setup but not installed. Install bash and re-run."
+        fi
     fi
 }
 
@@ -2095,6 +2114,31 @@ SCREENRC_EOF
     chmod 0644 "$HOME/.screenrc"
 }
 
+ensure_bash_it_block_in_bashrc() {
+    local bashrc="$HOME/.bashrc"
+    local marker="# BEGIN BASH_IT_MANAGED_BLOCK"
+
+    touch "$bashrc"
+    if grep -qF "$marker" "$bashrc"; then
+        log "bash-it block already present in .bashrc"
+        return
+    fi
+    if grep -q "bash_it.sh" "$bashrc"; then
+        log ".bashrc already sources bash-it"
+        return
+    fi
+
+    cat >>"$bashrc" <<'BASHRC_EOF'
+
+# BEGIN BASH_IT_MANAGED_BLOCK
+export BASH_IT="$HOME/.bash_it"
+export BASH_IT_THEME='bobby'
+source "$BASH_IT"/bash_it.sh
+# END BASH_IT_MANAGED_BLOCK
+BASHRC_EOF
+    chmod 0644 "$bashrc"
+}
+
 setup_zsh() {
     local zsh_dir="$HOME/.oh-my-zsh"
     if [[ ! -d "$zsh_dir" ]]; then
@@ -2133,6 +2177,18 @@ setup_screen() {
     write_screenrc
 }
 
+setup_bash_it() {
+    local bash_it_dir="$HOME/.bash_it"
+
+    log "Installing bash-it"
+    ensure_git_repo "https://github.com/Bash-it/bash-it.git" "$bash_it_dir"
+    [[ -f "${bash_it_dir}/install.sh" ]] || die "bash-it installer not found at ${bash_it_dir}/install.sh"
+    bash "${bash_it_dir}/install.sh" --silent --no-modify-config
+
+    backup_file "$HOME/.bashrc"
+    ensure_bash_it_block_in_bashrc
+}
+
 main() {
     parse_args "$@"
     detect_os
@@ -2155,6 +2211,9 @@ main() {
     if target_includes_screen; then
         setup_screen
     fi
+    if target_includes_bash_it; then
+        setup_bash_it
+    fi
 
     log "Done."
     if target_includes_zsh; then
@@ -2166,6 +2225,9 @@ main() {
     fi
     if target_includes_screen; then
         log "Run screen with: screen"
+    fi
+    if target_includes_bash_it; then
+        log "Open a new shell or run: source ~/.bashrc"
     fi
 }
 

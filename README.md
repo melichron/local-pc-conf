@@ -51,3 +51,14 @@ or `wget`
 ```shell
 wget -qO- https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- screen
 ```
+
+For setup and install `bash-it`:
+
+```shell
+curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- bash-it
+```
+or `wget`
+
+```shell
+wget -qO- https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- bash-it
+```
