@@ -2,6 +2,7 @@
 set -euo pipefail
 
 LOG_PREFIX="[ohmyzsh-install]"
+INSTALL_TARGET="${INSTALL_TARGET:-}"
 
 log() {
     printf '%s %s\n' "$LOG_PREFIX" "$*"
@@ -25,8 +26,76 @@ backup_file() {
     fi
 }
 
+usage() {
+    cat <<'USAGE_EOF'
+Usage:
+  install-oh-my-zsh.sh [zsh|tmux|all]
+  install-oh-my-zsh.sh --target [zsh|tmux|all]
+
+Environment:
+  INSTALL_TARGET=zsh|tmux|all
+
+Examples:
+  curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- tmux
+  curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | INSTALL_TARGET=all bash
+USAGE_EOF
+}
+
+parse_args() {
+    local cli_target=""
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+        zsh | tmux | all)
+            [[ -z "$cli_target" ]] || die "Target already specified: $cli_target"
+            cli_target="$1"
+            shift
+            ;;
+        -t | --target)
+            shift
+            [[ $# -gt 0 ]] || die "--target requires a value: zsh|tmux|all"
+            [[ -z "$cli_target" ]] || die "Target already specified: $cli_target"
+            cli_target="$1"
+            shift
+            ;;
+        -h | --help)
+            usage
+            exit 0
+            ;;
+        *)
+            die "Unknown argument: $1 (expected zsh|tmux|all, --target, --help)"
+            ;;
+        esac
+    done
+
+    if [[ -n "$cli_target" ]]; then
+        INSTALL_TARGET="$cli_target"
+    elif [[ -n "${INSTALL_TARGET:-}" ]]; then
+        INSTALL_TARGET="${INSTALL_TARGET}"
+    else
+        INSTALL_TARGET="zsh"
+    fi
+
+    case "$INSTALL_TARGET" in
+    zsh | tmux | all) ;;
+    *)
+        die "Unsupported target: ${INSTALL_TARGET}. Use zsh, tmux, or all."
+        ;;
+    esac
+}
+
+target_includes_zsh() {
+    [[ "$INSTALL_TARGET" == "zsh" || "$INSTALL_TARGET" == "all" ]]
+}
+
+target_includes_tmux() {
+    [[ "$INSTALL_TARGET" == "tmux" || "$INSTALL_TARGET" == "all" ]]
+}
+
 install_packages_ubuntu() {
     local sudo_cmd=""
+    local packages=()
     if [[ "${EUID}" -ne 0 ]]; then
         if have_cmd sudo; then
             sudo_cmd="sudo"
@@ -35,19 +104,35 @@ install_packages_ubuntu() {
         fi
     fi
 
-    log "Installing packages via apt"
+    if target_includes_zsh; then
+        packages+=(zsh powerline git python3-pygments)
+    fi
+    if target_includes_tmux; then
+        packages+=(tmux)
+    fi
+
+    log "Installing packages via apt: ${packages[*]}"
     ${sudo_cmd} apt-get update -y
-    ${sudo_cmd} apt-get install -y zsh powerline git python3-pygments
+    ${sudo_cmd} apt-get install -y "${packages[@]}"
 }
 
 install_packages_macos() {
+    local packages=()
+
+    if target_includes_zsh; then
+        packages+=(zsh git pygments)
+    fi
+    if target_includes_tmux; then
+        packages+=(tmux)
+    fi
+
     if have_cmd brew; then
-        log "Installing packages via Homebrew"
+        log "Installing packages via Homebrew: ${packages[*]}"
         brew update
-        brew install zsh git pygments
+        brew install "${packages[@]}"
     else
         log "Homebrew not found; skipping package install."
-        log "Ensure zsh, git, and python3/pygments are available, then re-run."
+        log "Ensure required packages are available (${packages[*]}), then re-run."
     fi
 }
 
@@ -75,11 +160,17 @@ detect_os() {
 }
 
 ensure_requirements() {
-    if ! have_cmd git; then
-        die "git is required but not installed. Install git and re-run."
+    if target_includes_zsh; then
+        if ! have_cmd git; then
+            die "git is required for zsh setup but not installed. Install git and re-run."
+        fi
+        if ! have_cmd zsh; then
+            die "zsh is required for zsh setup but not installed. Install zsh and re-run."
+        fi
     fi
-    if ! have_cmd zsh; then
-        die "zsh is required but not installed. Install zsh and re-run."
+
+    if target_includes_tmux && ! have_cmd tmux; then
+        die "tmux is required for tmux setup but not installed. Install tmux and re-run."
     fi
 }
 
@@ -1857,17 +1948,115 @@ ZSHRC_EOF
     chmod 0664 "$HOME/.zshrc"
 }
 
-main() {
-    detect_os
+write_tmuxrc() {
+    cat >"$HOME/.tmux.conf" <<'TMUXRC_EOF'
+##### GENERAL BEHAVIOR #####
 
-    if [[ "$OS_NAME" == "ubuntu" ]]; then
-        install_packages_ubuntu
-    else
-        install_packages_macos
-    fi
+# Use 256 colors (works well on most Linux terminals)
+set -g default-terminal "screen-256color"
 
-    ensure_requirements
+# Start window and pane numbering at 1 instead of 0
+set -g base-index 1
+setw -g pane-base-index 1
 
+# Renumber windows automatically when one is closed
+set -g renumber-windows on
+
+
+##### INPUT / INTERACTION #####
+
+# Enable mouse support:
+# - select panes
+# - resize panes
+# - scroll history (copy-mode)
+set -g mouse on
+
+# Use vi-style keybindings in copy mode
+setw -g mode-keys vi
+
+# Increase scrollback history
+set -g history-limit 50000
+
+
+##### PANE NAVIGATION #####
+
+# Switch panes using Alt + Arrow keys (no prefix required)
+bind -n M-Left  select-pane -L
+bind -n M-Right select-pane -R
+bind -n M-Up    select-pane -U
+bind -n M-Down  select-pane -D
+
+# Resize panes using Alt + Shift + Arrow keys
+bind -n M-S-Left  resize-pane -L 5
+bind -n M-S-Right resize-pane -R 5
+bind -n M-S-Up    resize-pane -U 5
+bind -n M-S-Down  resize-pane -D 5
+
+
+##### WINDOW MANAGEMENT #####
+
+# Create new window in the current working directory
+bind c new-window -c "#{pane_current_path}"
+
+# Split panes and keep current working directory
+bind %   split-window -h -c "#{pane_current_path}"
+bind '"' split-window -v -c "#{pane_current_path}"
+
+# Close pane without confirmation (comment if you want safety)
+# bind x kill-pane
+
+
+##### COPY MODE (MOUSE + KEYBOARD FRIENDLY) #####
+
+# Enter copy mode with mouse wheel scroll up (when not already in copy mode)
+bind -n WheelUpPane if-shell -F -t = "#{mouse_any_flag}" \
+  "send-keys -M" \
+  "copy-mode -e; send-keys -M"
+
+# Keep normal mouse wheel behavior
+bind -n WheelDownPane send-keys -M
+
+# Start selection in copy-mode (vi-style)
+bind -T copy-mode-vi v send -X begin-selection
+bind -T copy-mode-vi y send -X copy-selection-and-cancel
+
+
+##### ACTIVITY / VISUAL FEEDBACK #####
+
+# Monitor activity in inactive windows
+setw -g monitor-activity on
+set -g visual-activity on
+
+
+##### STATUS BAR #####
+
+# Status bar update interval (seconds)
+set -g status-interval 5
+
+# Status bar position
+set -g status-position bottom
+
+# Left side: session name
+set -g status-left-length 30
+set -g status-left "#[bold] #S "
+
+# Right side: date & time
+set -g status-right-length 60
+set -g status-right "%Y-%m-%d %H:%M"
+
+
+##### SAFETY / QUALITY OF LIFE #####
+
+# Don't detach tmux when killing the last window
+set -g detach-on-destroy off
+
+# Allow programs to rename windows (e.g. ssh, vim)
+set -g allow-rename on
+TMUXRC_EOF
+    chmod 0644 "$HOME/.tmux.conf"
+}
+
+setup_zsh() {
     local zsh_dir="$HOME/.oh-my-zsh"
     if [[ ! -d "$zsh_dir" ]]; then
         log "Cloning oh-my-zsh"
@@ -1893,10 +2082,41 @@ main() {
 
     backup_file "$HOME/.zshrc"
     write_zshrc
+}
+
+setup_tmux() {
+    backup_file "$HOME/.tmux.conf"
+    write_tmuxrc
+}
+
+main() {
+    parse_args "$@"
+    detect_os
+
+    if [[ "$OS_NAME" == "ubuntu" ]]; then
+        install_packages_ubuntu
+    else
+        install_packages_macos
+    fi
+
+    ensure_requirements
+
+    if target_includes_zsh; then
+        setup_zsh
+    fi
+
+    if target_includes_tmux; then
+        setup_tmux
+    fi
 
     log "Done."
-    log "Open a new terminal or run: exec zsh"
-    log "Optional: set zsh as default shell: chsh -s \"$(command -v zsh)\""
+    if target_includes_zsh; then
+        log "Open a new terminal or run: exec zsh"
+        log "Optional: set zsh as default shell: chsh -s \"$(command -v zsh)\""
+    fi
+    if target_includes_tmux; then
+        log "Run tmux with: tmux"
+    fi
 }
 
 main "$@"
