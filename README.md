@@ -29,3 +29,14 @@ or `wget`
 ```shell
 wget -qO- https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash
 ```
+
+For setup and install `tmux`:
+
+```shell
+curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- tmux
+```
+or `wget`
+
+```shell
+wget -qO- https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- tmux
+```
