@@ -40,3 +40,14 @@ or `wget`
 ```shell
 wget -qO- https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- tmux
 ```
+
+For setup and install `screen`:
+
+```shell
+curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- screen
+```
+or `wget`
+
+```shell
+wget -qO- https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- screen
+```

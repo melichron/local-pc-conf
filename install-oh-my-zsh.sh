@@ -29,15 +29,16 @@ backup_file() {
 usage() {
     cat <<'USAGE_EOF'
 Usage:
-  install-oh-my-zsh.sh [zsh|tmux|all]
-  install-oh-my-zsh.sh --target [zsh|tmux|all]
+  install-oh-my-zsh.sh [zsh|tmux|screen|all]
+  install-oh-my-zsh.sh --target [zsh|tmux|screen|all]
 
 Environment:
-  INSTALL_TARGET=zsh|tmux|all
+  INSTALL_TARGET=zsh|tmux|screen|all
 
 Examples:
   curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash
   curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- tmux
+  curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- screen
   curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | INSTALL_TARGET=all bash
 USAGE_EOF
 }
@@ -47,14 +48,14 @@ parse_args() {
 
     while [[ $# -gt 0 ]]; do
         case "$1" in
-        zsh | tmux | all)
+        zsh | tmux | screen | all)
             [[ -z "$cli_target" ]] || die "Target already specified: $cli_target"
             cli_target="$1"
             shift
             ;;
         -t | --target)
             shift
-            [[ $# -gt 0 ]] || die "--target requires a value: zsh|tmux|all"
+            [[ $# -gt 0 ]] || die "--target requires a value: zsh|tmux|screen|all"
             [[ -z "$cli_target" ]] || die "Target already specified: $cli_target"
             cli_target="$1"
             shift
@@ -64,7 +65,7 @@ parse_args() {
             exit 0
             ;;
         *)
-            die "Unknown argument: $1 (expected zsh|tmux|all, --target, --help)"
+            die "Unknown argument: $1 (expected zsh|tmux|screen|all, --target, --help)"
             ;;
         esac
     done
@@ -78,9 +79,9 @@ parse_args() {
     fi
 
     case "$INSTALL_TARGET" in
-    zsh | tmux | all) ;;
+    zsh | tmux | screen | all) ;;
     *)
-        die "Unsupported target: ${INSTALL_TARGET}. Use zsh, tmux, or all."
+        die "Unsupported target: ${INSTALL_TARGET}. Use zsh, tmux, screen, or all."
         ;;
     esac
 }
@@ -91,6 +92,10 @@ target_includes_zsh() {
 
 target_includes_tmux() {
     [[ "$INSTALL_TARGET" == "tmux" || "$INSTALL_TARGET" == "all" ]]
+}
+
+target_includes_screen() {
+    [[ "$INSTALL_TARGET" == "screen" || "$INSTALL_TARGET" == "all" ]]
 }
 
 install_packages_ubuntu() {
@@ -110,6 +115,9 @@ install_packages_ubuntu() {
     if target_includes_tmux; then
         packages+=(tmux)
     fi
+    if target_includes_screen; then
+        packages+=(screen)
+    fi
 
     log "Installing packages via apt: ${packages[*]}"
     ${sudo_cmd} apt-get update -y
@@ -124,6 +132,9 @@ install_packages_macos() {
     fi
     if target_includes_tmux; then
         packages+=(tmux)
+    fi
+    if target_includes_screen; then
+        packages+=(screen)
     fi
 
     if have_cmd brew; then
@@ -171,6 +182,9 @@ ensure_requirements() {
 
     if target_includes_tmux && ! have_cmd tmux; then
         die "tmux is required for tmux setup but not installed. Install tmux and re-run."
+    fi
+    if target_includes_screen && ! have_cmd screen; then
+        die "screen is required for screen setup but not installed. Install screen and re-run."
     fi
 }
 
@@ -2056,6 +2070,31 @@ TMUXRC_EOF
     chmod 0644 "$HOME/.tmux.conf"
 }
 
+write_screenrc() {
+    local script_dir bundled_screenrc
+
+    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    bundled_screenrc="${script_dir}/files/.screenrc"
+
+    if [[ -f "${bundled_screenrc}" ]]; then
+        cp "${bundled_screenrc}" "$HOME/.screenrc"
+        chmod 0644 "$HOME/.screenrc"
+        return
+    fi
+
+    cat >"$HOME/.screenrc" <<'SCREENRC_EOF'
+caption always "%{= 45}%{+b w}Screen: %n | %h %=%t %c"
+hardstatus alwayslastline "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
+termcapinfo xterm* ti@:te@
+escape ^Aa
+bind c screen 1
+bind ^c screen 1
+bind 0 select 10
+screen 1
+SCREENRC_EOF
+    chmod 0644 "$HOME/.screenrc"
+}
+
 setup_zsh() {
     local zsh_dir="$HOME/.oh-my-zsh"
     if [[ ! -d "$zsh_dir" ]]; then
@@ -2089,6 +2128,11 @@ setup_tmux() {
     write_tmuxrc
 }
 
+setup_screen() {
+    backup_file "$HOME/.screenrc"
+    write_screenrc
+}
+
 main() {
     parse_args "$@"
     detect_os
@@ -2108,6 +2152,9 @@ main() {
     if target_includes_tmux; then
         setup_tmux
     fi
+    if target_includes_screen; then
+        setup_screen
+    fi
 
     log "Done."
     if target_includes_zsh; then
@@ -2116,6 +2163,9 @@ main() {
     fi
     if target_includes_tmux; then
         log "Run tmux with: tmux"
+    fi
+    if target_includes_screen; then
+        log "Run screen with: screen"
     fi
 }
 
