@@ -211,6 +211,44 @@ install_packages_macos() {
     fi
 }
 
+install_packages_amzn() {
+    local sudo_cmd=""
+    local pkg_cmd=""
+    local packages=()
+
+    if [[ "${EUID}" -ne 0 ]]; then
+        if have_cmd sudo; then
+            sudo_cmd="sudo"
+        else
+            die "sudo not found; run this script as root."
+        fi
+    fi
+
+    if have_cmd dnf; then
+        pkg_cmd="dnf"
+    elif have_cmd yum; then
+        pkg_cmd="yum"
+    else
+        die "No supported package manager found (dnf/yum)."
+    fi
+
+    if target_includes_zsh; then
+        packages+=(zsh git)
+    fi
+    if target_includes_tmux; then
+        packages+=(tmux)
+    fi
+    if target_includes_screen; then
+        packages+=(screen)
+    fi
+    if target_includes_bash_it; then
+        packages+=(git)
+    fi
+
+    log "Installing packages via ${pkg_cmd}: ${packages[*]}"
+    ${sudo_cmd} ${pkg_cmd} install -y "${packages[@]}"
+}
+
 detect_os() {
     local uname_out
     uname_out="$(uname -s)"
@@ -223,10 +261,13 @@ detect_os() {
             # shellcheck disable=SC1091
             . /etc/os-release
         fi
-        if [[ "${ID:-}" != "ubuntu" ]]; then
-            die "Unsupported Linux distro. Only Ubuntu is supported."
+        if [[ "${ID:-}" == "ubuntu" ]]; then
+            OS_NAME="ubuntu"
+        elif [[ "${ID:-}" == "amzn" && "${VERSION_ID:-}" == 2023* ]]; then
+            OS_NAME="amzn2023"
+        else
+            die "Unsupported Linux distro. Supported: Ubuntu, Amazon Linux 2023."
         fi
-        OS_NAME="ubuntu"
         ;;
     *)
         die "Unsupported OS: ${uname_out}"
@@ -262,8 +303,8 @@ ensure_requirements() {
 
 ensure_install_destination_requirements() {
     if dest_includes_skel; then
-        if [[ "$OS_NAME" != "ubuntu" ]]; then
-            die "INSTALL_DEST=skel is supported only on Ubuntu."
+        if [[ "$OS_NAME" != "ubuntu" && "$OS_NAME" != "amzn2023" ]]; then
+            die "INSTALL_DEST=skel is supported on Ubuntu and Amazon Linux 2023."
         fi
         if [[ "${EUID}" -ne 0 ]]; then
             die "INSTALL_DEST=skel requires root privileges. Re-run as root."
@@ -2261,6 +2302,8 @@ main() {
 
     if [[ "$OS_NAME" == "ubuntu" ]]; then
         install_packages_ubuntu
+    elif [[ "$OS_NAME" == "amzn2023" ]]; then
+        install_packages_amzn
     else
         install_packages_macos
     fi

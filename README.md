@@ -63,7 +63,7 @@ or `wget`
 wget -qO- https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | bash -s -- bash-it
 ```
 
-For Packer images (write templates to `/etc/skel` for future users):
+For Packer images (write templates to `/etc/skel` for future users; Ubuntu and Amazon Linux 2023):
 
 ```shell
 curl -fsSL https://raw.githubusercontent.com/melichron/local-pc-conf/refs/heads/master/install-oh-my-zsh.sh | INSTALL_TARGET=all INSTALL_DEST=skel bash
