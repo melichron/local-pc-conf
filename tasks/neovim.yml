@@ -1,0 +1,30 @@
+---
+- name: Install Neovim and Git
+  ansible.builtin.package:
+    name:
+      - neovim
+      - git
+    state: present
+  # become: true
+
+- name: Verify that Neovim 0.10 or newer is installed
+  ansible.builtin.command:
+    argv:
+      - nvim
+      - --headless
+      - --clean
+      - "+lua if vim.fn.has('nvim-0.10') == 0 then vim.cmd('cquit 1') end"
+      - +qa
+  changed_when: false
+
+- name: Create Neovim configuration directory
+  ansible.builtin.file:
+    path: "{{ lookup('env', 'HOME') }}/.config/nvim"
+    state: directory
+    mode: "0755"
+
+- name: Define Neovim configuration
+  ansible.builtin.template:
+    src: init.lua.j2
+    dest: "{{ lookup('env', 'HOME') }}/.config/nvim/init.lua"
+    mode: "0644"

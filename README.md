@@ -19,6 +19,12 @@ ansible-playbook local-pc-conf.yml
 ```
 and wait.
 
+To install and configure Neovim only (Neovim 0.10 or newer is required):
+
+```shell
+ansible-playbook local-conf-ansible.yml --tags neovim
+```
+
 Or install only `oh-my-zsh` with script with `curl`
 
 ```shell

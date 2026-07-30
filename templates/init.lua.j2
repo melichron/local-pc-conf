@@ -1,0 +1,210 @@
+-- Managed by Ansible. Local changes will be overwritten.
+
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+
+-- nvim-tree replaces netrw, so disable netrw before loading plugins.
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+local opt = vim.opt
+
+opt.backspace = { "indent", "eol", "start" }
+opt.history = 200
+opt.ruler = true
+opt.showcmd = true
+opt.wildmenu = true
+opt.timeout = true
+opt.timeoutlen = 500
+opt.ttimeout = true
+opt.ttimeoutlen = 100
+opt.scrolloff = 5
+opt.incsearch = true
+opt.hlsearch = true
+opt.ignorecase = true
+opt.smartcase = true
+opt.mouse = "a"
+opt.termguicolors = true
+opt.number = true
+opt.signcolumn = "yes"
+opt.splitbelow = true
+opt.splitright = true
+opt.undofile = true
+opt.updatetime = 250
+opt.completeopt = { "menu", "menuone", "noselect" }
+opt.nrformats:remove("octal")
+
+vim.cmd("syntax enable")
+vim.cmd("filetype plugin indent on")
+
+vim.keymap.set("n", "Q", "gq", { desc = "Format with operator" })
+vim.keymap.set("i", "<C-u>", "<C-g>u<C-u>", { desc = "Delete to line start with undo break" })
+vim.keymap.set("n", "<C-l>", "<cmd>tabnext<cr>", { silent = true, desc = "Next tab" })
+vim.keymap.set("n", "<C-h>", "<cmd>tabprevious<cr>", { silent = true, desc = "Previous tab" })
+
+local cursor_group = vim.api.nvim_create_augroup("restore_cursor", { clear = true })
+vim.api.nvim_create_autocmd("BufReadPost", {
+  group = cursor_group,
+  callback = function(event)
+    local mark = vim.api.nvim_buf_get_mark(event.buf, '"')
+    local line_count = vim.api.nvim_buf_line_count(event.buf)
+    if mark[1] > 0 and mark[1] <= line_count and vim.bo[event.buf].filetype ~= "gitcommit" then
+      pcall(vim.api.nvim_win_set_cursor, 0, mark)
+    end
+  end,
+})
+
+vim.api.nvim_create_user_command("DiffOrig", function()
+  vim.cmd("vert new")
+  vim.bo.buftype = "nofile"
+  vim.cmd("read ++edit #")
+  vim.cmd("0delete _")
+  vim.cmd("diffthis")
+  vim.cmd("wincmd p")
+  vim.cmd("diffthis")
+end, { desc = "Compare the current buffer with the file on disk" })
+
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.uv.fs_stat(lazypath) then
+  local output = vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "--branch=stable",
+    "https://github.com/folke/lazy.nvim.git",
+    lazypath,
+  })
+  if vim.v.shell_error ~= 0 then
+    error("Failed to install lazy.nvim:\n" .. output)
+  end
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup({
+  {
+    "AlexvZyl/nordic.nvim",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      require("nordic").load()
+    end,
+  },
+  {
+    "nvim-tree/nvim-tree.lua",
+    version = "*",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    keys = {
+      { "<C-n>", "<cmd>NvimTreeToggle<cr>", desc = "Toggle file tree" },
+    },
+    opts = {
+      filters = { dotfiles = false },
+      git = { enable = true, ignore = false },
+      renderer = { group_empty = true },
+      view = { width = 34 },
+    },
+  },
+  {
+    "nvim-lualine/lualine.nvim",
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+    opts = {
+      options = {
+        theme = "auto",
+        globalstatus = true,
+      },
+    },
+  },
+  {
+    "lewis6991/gitsigns.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+    opts = {
+      current_line_blame = false,
+      signs = {
+        add = { text = "+" },
+        change = { text = "~" },
+        delete = { text = "_" },
+        topdelete = { text = "‾" },
+        changedelete = { text = "~" },
+      },
+    },
+  },
+  {
+    "stevearc/aerial.nvim",
+    cmd = { "AerialOpen", "AerialToggle" },
+    keys = {
+      { "<leader>o", "<cmd>AerialToggle!<cr>", desc = "Toggle symbol outline" },
+    },
+    opts = {
+      backends = { "lsp", "treesitter", "markdown", "man" },
+      layout = { default_direction = "right" },
+    },
+  },
+  {
+    "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
+    event = { "BufReadPost", "BufNewFile" },
+    keys = {
+      { "<leader>ig", "<cmd>IBLToggle<cr>", desc = "Toggle indent guides" },
+    },
+    opts = {
+      enabled = false,
+      indent = { char = "┊" },
+      scope = { enabled = true },
+    },
+  },
+  {
+    "nvim-treesitter/nvim-treesitter",
+    branch = "master",
+    lazy = false,
+    build = ":TSUpdate",
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = {
+          "bash",
+          "dockerfile",
+          "json",
+          "lua",
+          "markdown",
+          "markdown_inline",
+          "nginx",
+          "python",
+          "query",
+          "vim",
+          "vimdoc",
+          "yaml",
+        },
+        auto_install = true,
+        highlight = { enable = true },
+        indent = { enable = true },
+      })
+    end,
+  },
+  {
+    "https://codeberg.org/mfussenegger/nvim-ansible.git",
+    ft = "yaml.ansible",
+    keys = {
+      {
+        "<leader>ar",
+        function()
+          vim.cmd.write()
+          require("ansible").run()
+        end,
+        desc = "Run Ansible playbook or role",
+      },
+    },
+  },
+  {
+    "NeogitOrg/neogit",
+    cmd = "Neogit",
+    keys = {
+      { "<leader>gg", "<cmd>Neogit<cr>", desc = "Open Neogit" },
+    },
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "sindrets/diffview.nvim",
+    },
+    opts = {},
+  },
+}, {
+  change_detection = { notify = false },
+  checker = { enabled = false },
+})
